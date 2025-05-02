@@ -31,31 +31,41 @@ namespace Restaurant
                 .AddDbContext<RestaurantDbContext>(opts =>
                     opts.UseSqlServer(config.GetConnectionString("RestaurantDb")))
 
+                // MainWindow as singleton + navigation
+
+                .AddScoped<IAuthService, AuthService>()
+                .AddSingleton<MainWindowViewModel>()
+                .AddSingleton<INavigationService>(sp =>
+                    sp.GetRequiredService<MainWindowViewModel>())
                 // ViewModels
-                .AddTransient<RegisterViewModel>()
                 .AddTransient<LoginViewModel>()
-                //.AddTransient<SearchViewModel>()
-                //.AddTransient<MenuViewModel>()
-                //.AddTransient<OrderViewModel>()
-                //.AddTransient<EmployeeDashboardViewModel>()
+                .AddTransient<RegisterViewModel>()
+               //.AddTransient<SearchViewModel>()
+                .AddTransient<MenuViewModel>()
+               //.AddTransient<OrderViewModel>()
+               .AddTransient<EmployeeDashboardViewModel>(sp =>
+    new EmployeeDashboardViewModel(
+        sp.GetRequiredService<RestaurantDbContext>(),
+        sp.GetRequiredService<IConfiguration>(),
+        sp.GetRequiredService<IAuthService>(),
+        sp.GetRequiredService<INavigationService>()
+    )
+)
                 // … other VMs …
 
                 // UserControls
                 .AddTransient<LoginControl>()
                 .AddTransient<RegisterControl>()
-
-                // MainWindow as singleton + navigation
-                .AddSingleton<MainWindow>()
-                .AddSingleton<MainWindowViewModel>()
-                .AddSingleton<INavigationService>(sp =>
-                    sp.GetRequiredService<MainWindow>())
-
+                .AddTransient<EmployeeDashboardControl>()
+                .AddTransient<EmployeeDashboardWindow>()
+                .AddTransient<MenuControl>()
                 // App services (e.g. authentication, order service, etc.)
-                .AddScoped<IAuthService, AuthService>()
                 // …
                 .AddScoped<LoginViewModel>()
                 .AddScoped<RegisterViewModel>()
-                
+                .AddScoped<EmployeeDashboardViewModel>()
+
+                .AddSingleton<MainWindow>()
                 //.AddScoped<MainMenuViewModel>()
             ;
 
@@ -82,6 +92,7 @@ namespace Restaurant
                     }
 
                     // Optional: create the DB if it doesn't exist
+
                     dbContext.Database.EnsureCreated();
                 }
                 catch (Exception ex)

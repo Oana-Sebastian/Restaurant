@@ -25,6 +25,8 @@ namespace Restaurant.Data
         public DbSet<MenuItem> MenuItems => Set<MenuItem>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<DishImage> DishImages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,6 +95,14 @@ namespace Restaurant.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Optional: configure default schema/table/column naming conventions here if needed
+            modelBuilder.Entity<DishImage>()
+    .HasKey(di => di.DishImageId);
+
+            modelBuilder.Entity<DishImage>()
+                .HasOne(di => di.Dish)
+                .WithMany(d => d.Images)
+                .HasForeignKey(di => di.DishId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }

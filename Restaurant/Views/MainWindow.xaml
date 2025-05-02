@@ -22,16 +22,13 @@
             <Button Content="Order"
               Command="{Binding NavigateOrderCommand}"
               Margin="2" Padding="8,4"/>
-            <Button Content="Manage"
-              Command="{Binding NavigateManageCommand}"
-              Margin="2" Padding="8,4"/>
             <Button Content="Logout"
               Command="{Binding LogoutCommand}"
               Margin="2" Padding="8,4"/>
         </StackPanel>
 
         <!-- Central area bound to VM.CurrentView -->
-        <ContentControl x:Name="ContentArea" />
+        <ContentControl Content="{Binding CurrentView}" />
 
     </DockPanel>
 </Window>

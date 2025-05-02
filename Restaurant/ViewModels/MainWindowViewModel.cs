@@ -14,8 +14,8 @@ namespace Restaurant.ViewModels
     {
         private readonly IServiceProvider _sp;
         private readonly IAuthService _auth;
-        private UserControl _currentView;
-
+        private UserControl _currentView=null!;
+         
         public UserControl CurrentView
         {
             get => _currentView;
@@ -45,12 +45,12 @@ namespace Restaurant.ViewModels
                                                        _ => _auth.CurrentUser == null);
             //NavigateSearchCommand = new RelayCommand(_ => NavigateTo(nameof(SearchViewModel)),
             //                                           _ => true);
-            //NavigateMenuCommand = new RelayCommand(_ => NavigateTo(nameof(MenuViewModel)),
-            //                                           _ => true);
+            NavigateMenuCommand = new RelayCommand(_ => NavigateTo(nameof(MenuViewModel)),
+                                                       _ => true);
             //NavigateOrderCommand = new RelayCommand(_ => NavigateTo(nameof(OrderViewModel)),
             //                                           _ => _auth.CurrentUser?.Role == Models.UserRole.Client);
-            //NavigateManageCommand = new RelayCommand(_ => NavigateTo(nameof(EmployeeDashboardViewModel)),
-            //                                           _ => _auth.CurrentUser?.Role == Models.UserRole.Employee);
+            NavigateManageCommand = new RelayCommand(_ => NavigateTo(nameof(EmployeeDashboardViewModel)),
+                                                       _ => _auth.CurrentUser?.Role == Models.UserRole.Employee);
             LogoutCommand = new RelayCommand(_ =>
             {
                 _auth.Logout();
@@ -58,14 +58,8 @@ namespace Restaurant.ViewModels
                 NavigateTo(nameof(LoginViewModel));
             },
                                                        _ => _auth.CurrentUser != null);
-
-            // start on login
-            NavigateTo(nameof(LoginViewModel));
+           
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged([CallerMemberName] string prop = "") =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
 
         public void NavigateTo(string viewModelKey)
         {
@@ -84,6 +78,14 @@ namespace Restaurant.ViewModels
                     viewModel = _sp.GetRequiredService<RegisterViewModel>();
                     break;
 
+                case nameof(EmployeeDashboardViewModel):
+                    view = _sp.GetRequiredService<EmployeeDashboardControl>();
+                    viewModel = _sp.GetRequiredService<EmployeeDashboardViewModel>();
+                    break;
+                case nameof(MenuViewModel):
+                    view = _sp.GetRequiredService<MenuControl>();
+                    viewModel = _sp.GetRequiredService<MenuViewModel>();
+                    break;
                 // … add your other cases here …
 
                 default:
@@ -96,5 +98,9 @@ namespace Restaurant.ViewModels
             // **This** tells WPF to show the new control
             CurrentView = view;
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string prop = "") =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
 }

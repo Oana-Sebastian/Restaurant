@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="Restaurant.Views.MenuControl"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+   <ScrollViewer>
+       <StackPanel>
+           <ItemsControl ItemsSource="{Binding Categories}">
+               <ItemsControl.ItemTemplate>
+                   <DataTemplate>
+                       <StackPanel Margin="0,10">
+                           <!-- Category Header -->
+                           <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" />
+
+                           <!-- Dishes Grid -->
+                           <UniformGrid Columns="2" Margin="0,5">
+                               <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
+                                   <StackPanel>
+                                       <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                       <TextBlock Text="{Binding PortionDisplay}"/>
+                                       <TextBlock Text="{Binding Price, StringFormat=C}"/>
+                                       <TextBlock Text="{Binding AllergensDisplay}"/>
+                                       <ItemsControl ItemsSource="{Binding ImageUrls}">
+                                           <ItemsControl.ItemsPanel>
+                                               <ItemsPanelTemplate>
+                                                   <StackPanel Orientation="Horizontal"/>
+                                               </ItemsPanelTemplate>
+                                           </ItemsControl.ItemsPanel>
+                                           <ItemsControl.ItemTemplate>
+                                               <DataTemplate>
+                                                   <Image Source="{Binding}" Width="50" Height="50" Margin="2"/>
+                                               </DataTemplate>
+                                           </ItemsControl.ItemTemplate>
+                                       </ItemsControl>
+                                       <TextBlock Text="&#x26A0; {Binding AvailabilityText}" Foreground="Red"
+                              Visibility="{Binding IsAvailable, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                   </StackPanel>
+                               </Border>
+                           </UniformGrid>
+
+                           <!-- Menus Grid -->
+                           <UniformGrid Columns="2" Margin="0,5">
+                               <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
+                                   <StackPanel>
+                                       <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="DarkBlue"/>
+                                       <ItemsControl ItemsSource="{Binding Components}">
+                                           <ItemsControl.ItemTemplate>
+                                               <DataTemplate>
+                                                   <StackPanel>
+                                                       <TextBlock Text="{Binding Dish}"/>
+                                                       <TextBlock Text="{Binding Grams}"/>
+                                                   </StackPanel>
+                                               </DataTemplate>
+                                           </ItemsControl.ItemTemplate>
+                                       </ItemsControl>
+                                       <TextBlock Text="{Binding Price, StringFormat=C}"/>
+                                       <TextBlock Text="&#x26A0; {Binding AvailabilityText}" Foreground="Red"
+                              Visibility="{Binding IsAvailable, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                   </StackPanel>
+                               </Border>
+                           </UniformGrid>
+                       </StackPanel>
+                   </DataTemplate>
+               </ItemsControl.ItemTemplate>
+           </ItemsControl>
+       </StackPanel>
+   </ScrollViewer>
+</UserControl>

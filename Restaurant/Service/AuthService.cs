@@ -21,6 +21,12 @@ public class AuthService : IAuthService
         );
         if (hash != user.PasswordHash) return false;
 
+        if (user.Role == UserRole.Employee
+        && !email.EndsWith("@restaurant.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         CurrentUser = user;
         return true;
     }

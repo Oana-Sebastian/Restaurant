@@ -1,20 +1,24 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Restaurant.Data;
 using Restaurant.Helpers;
 using Restaurant.Models;
+using Restaurant.Service;
 
 namespace Restaurant.ViewModels
 {
     public class RegisterViewModel : INotifyPropertyChanged
     {
         private readonly RestaurantDbContext _db;
-        public RegisterViewModel(RestaurantDbContext db)
+        private readonly INavigationService _nav;
+        public RegisterViewModel(RestaurantDbContext db, INavigationService nav)
         {
             _db = db;
+            _nav = nav;
             RegisterCommand = new RelayCommand(_ => ExecuteRegister(), _ => CanRegister);
         }
 
@@ -69,8 +73,9 @@ namespace Restaurant.ViewModels
 
 
         public ICommand RegisterCommand { get; }
+        public ICommand ShowLoginCommand => new RelayCommand(_ => ShowLogin());
 
-         public bool CanRegister =>
+        public bool CanRegister =>
             !string.IsNullOrWhiteSpace(LastName) &&
             !string.IsNullOrWhiteSpace(FirstName) &&
             !string.IsNullOrWhiteSpace(Email) &&
@@ -82,39 +87,112 @@ namespace Restaurant.ViewModels
 
         private void ExecuteRegister()
         {
-            // 1) Map ViewModel fields into a User entity
+            // 1) Basic empty checks already guaranteed by CanRegister
+
+            // 2) Email format
+            var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            if (!Regex.IsMatch(Email.Trim(), emailPattern))
+            {
+                MessageBox.Show("Please enter a valid email address.", "Validation Error",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 3) Prevent duplicate emails
+            if (_db.Users.Any(u => u.Email == Email.Trim()))
+            {
+                MessageBox.Show("An account with that email already exists.", "Validation Error",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 4) Phone number format: optional +, then 10–15 digits
+            var phonePattern = @"^\+?\d{10,15}$";
+            if (!Regex.IsMatch(PhoneNumber.Trim(), phonePattern))
+            {
+                MessageBox.Show("Please enter a valid phone number (10–15 digits, optional leading +).",
+                                "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 5) Password strength: min 8 chars, at least one lowercase, one uppercase, one digit, one special
+            var pwdPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
+            if (!Regex.IsMatch(Password, pwdPattern))
+            {
+                MessageBox.Show(
+                    "Password must be at least 8 characters long and include:\n" +
+                    "- at least one uppercase letter\n" +
+                    "- at least one lowercase letter\n" +
+                    "- at least one digit\n" +
+                    "- at least one special character",
+                    "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 6) Everything’s valid—determine role and create user
+            var role = Email.Trim().EndsWith("@restaurant.com", StringComparison.OrdinalIgnoreCase)
+                       ? UserRole.Employee
+                       : UserRole.Client;
+
             var user = new User
             {
-                FirstName = FirstName,
-                LastName = LastName,
-                Email = Email,
-                PhoneNumber = PhoneNumber,
-                Address = DeliveryAddress,
-                Role = UserRole.Client,
-                // TODO: hash the password rather than storing plain text:
+                FirstName = FirstName.Trim(),
+                LastName = LastName.Trim(),
+                Email = Email.Trim(),
+                PhoneNumber = PhoneNumber.Trim(),
+                Address = DeliveryAddress.Trim(),
+                Role = role,
                 PasswordHash = HashPassword(Password)
             };
 
             try
             {
-                // 2) Add and Save
                 _db.Users.Add(user);
                 _db.SaveChanges();
 
-                MessageBox.Show("Registration successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(
+                    role == UserRole.Employee
+                        ? "Employee account created—please log in with your new credentials."
+                        : "Client account created—please log in to continue.",
+                    "Registration Successful",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
 
-                // 3) Optionally navigate back to login:
-                // _navigationService.NavigateTo(nameof(LoginViewModel));
+                // Clear form
+                FirstName = "";
+                LastName = "";
+                Email = "";
+                PhoneNumber = "";
+                DeliveryAddress = "";
+                Password = "";
+                ConfirmedPassword = "";
+
+                // Navigate back to login
+                _nav.NavigateTo(nameof(LoginViewModel));
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to register: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Failed to register: {ex.Message}", "Error",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private string HashPassword(string plain)
         {
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(plain));
+        }
+
+        private void ShowLogin()
+        {
+            LastName = string.Empty;
+            FirstName = string.Empty;
+            Email = string.Empty;
+            PhoneNumber = string.Empty;
+            DeliveryAddress = string.Empty;
+            Password = string.Empty;
+            ConfirmedPassword = string.Empty;
+            _nav.NavigateTo(nameof(LoginViewModel));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

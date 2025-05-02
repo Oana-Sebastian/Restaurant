@@ -1,0 +1,204 @@
+﻿<UserControl x:Class="Restaurant.Views.EmployeeDashboardControl"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            Height="Auto" Width="Auto">
+    <Grid>
+        <TabControl>
+
+            <!-- 1. Manage Categories, Dishes, Menus, Allergens -->
+            <TabItem Header="Catalogs">
+                <TabControl Margin="5">
+                    <!-- Categories -->
+                    <TabItem Header="Categories">
+                        <StackPanel>
+                            <DataGrid ItemsSource="{Binding Categories}"
+                                     AutoGenerateColumns="False"
+                                     SelectedItem="{Binding SelectedCategory}"
+                                     Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <TextBox Width="200" Text="{Binding NewCategoryName}" />
+                                <Button Content="Add" Command="{Binding AddCategoryCommand}" Margin="5,0"/>
+                                <Button Content="Delete" Command="{Binding DeleteCategoryCommand}" 
+                                       CommandParameter="{Binding SelectedCategory}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Dishes -->
+                    <TabItem Header="Dishes">
+                        <StackPanel>
+                            <DataGrid ItemsSource="{Binding Dishes}"
+                                     AutoGenerateColumns="False"
+                                     SelectedItem="{Binding SelectedDish}"
+                                     Height="250">
+                                <DataGrid.Columns>
+                                    <!-- Name -->
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+
+                                    <!-- Category -->
+                                    <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" />
+
+                                    <!-- Portion (g) -->
+                                    <DataGridTextColumn Header="Portion (g)"
+                                                       Binding="{Binding PortionQuantity}" />
+
+                                    <!-- Price -->
+                                    <DataGridTextColumn Header="Price"
+                                                       Binding="{Binding Price, StringFormat=C}" />
+
+                                    <!-- Allergens -->
+                                    <DataGridTemplateColumn Header="Allergens">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DishAllergens, 
+                                                        Converter={StaticResource AllergenListConverter}}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Images -->
+                                    <DataGridTemplateColumn Header="Images">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ItemsControl ItemsSource="{Binding Images}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Image Source="{Binding Url}"
+                                                                  Width="40" Height="40"
+                                                                  Margin="2" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Availability -->
+                                    <DataGridTemplateColumn Header="Status">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding AvailabilityText}"
+                                                          Foreground="Red"
+                                                          Visibility="{Binding IsAvailable,
+                                                                      Converter={StaticResource BoolToVisibilityConverter},
+                                                                      ConverterParameter=Invert}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Button Content="Add"    Command="{Binding AddDishCommand}" />
+                                <Button Content="Edit"   Command="{Binding EditDishCommand}"
+                                       CommandParameter="{Binding SelectedDish}" />
+                                <Button Content="Delete" Command="{Binding DeleteDishCommand}"
+                                       CommandParameter="{Binding SelectedDish}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Menus -->
+                    <TabItem Header="Menus">
+                        <StackPanel>
+                            <DataGrid ItemsSource="{Binding Menus}"
+                                     AutoGenerateColumns="False"
+                                     SelectedItem="{Binding SelectedMenu}"
+                                     Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                    <DataGridTextColumn Header="Discount %" Binding="{Binding DiscountPercent}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <Button Content="Add"    Command="{Binding AddMenuCommand}" />
+                                <Button Content="Edit"   Command="{Binding EditMenuCommand}" 
+                                       CommandParameter="{Binding SelectedMenu}" />
+                                <Button Content="Delete" Command="{Binding DeleteMenuCommand}" 
+                                       CommandParameter="{Binding SelectedMenu}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- Allergens -->
+                    <TabItem Header="Allergens">
+                        <StackPanel>
+                            <DataGrid ItemsSource="{Binding Allergens}"
+                                     AutoGenerateColumns="False"
+                                     SelectedItem="{Binding SelectedAllergen}"
+                                     Height="200">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                <TextBox Width="200" Text="{Binding NewAllergenName}" />
+                                <Button Content="Add"    Command="{Binding AddAllergenCommand}" Margin="5,0"/>
+                                <Button Content="Delete" Command="{Binding DeleteAllergenCommand}" 
+                                       CommandParameter="{Binding SelectedAllergen}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
+            <!-- 2. All Orders (desc by date/time) -->
+            <TabItem Header="All Orders">
+                <DataGrid ItemsSource="{Binding AllOrders}"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Order ID" Binding="{Binding OrderId}" />
+                        <DataGridTextColumn Header="User"    Binding="{Binding User.Email}" />
+                        <DataGridTextColumn Header="Date"    Binding="{Binding OrderDate}" />
+                        <DataGridTextColumn Header="Status"  Binding="{Binding Status}" />
+                        <DataGridTextColumn Header="Total"   Binding="{Binding TotalCost}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- 3. Active Orders -->
+            <TabItem Header="Active Orders">
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <DataGrid ItemsSource="{Binding ActiveOrders}"
+                             AutoGenerateColumns="False"
+                             SelectedItem="{Binding SelectedActiveOrder}"
+                             Margin="5">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Order ID" Binding="{Binding OrderId}" />
+                            <DataGridTextColumn Header="Date"    Binding="{Binding OrderDate}" />
+                            <DataGridTextColumn Header="Status"  Binding="{Binding Status}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Advance Status"
+                           Command="{Binding AdvanceOrderStatusCommand}"
+                           CommandParameter="{Binding SelectedActiveOrder}"
+                           Margin="5" VerticalAlignment="Top"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- 4. Low Stock Alerts -->
+            <TabItem Header="Low Stock">
+                <DataGrid ItemsSource="{Binding LowStockItems}"
+                         AutoGenerateColumns="False"
+                         Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Dish"     Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Quantity" Binding="{Binding TotalQuantity}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>

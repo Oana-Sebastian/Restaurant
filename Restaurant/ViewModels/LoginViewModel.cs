@@ -3,9 +3,12 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Helpers;        // RelayCommand
+using Restaurant.Models;
 using Restaurant.Service;        // IAuthService
-using Restaurant.ViewModels;     // for nameof(RegisterViewModel)
+using Restaurant.ViewModels;
+using Restaurant.Views;     // for nameof(RegisterViewModel)
 
 namespace Restaurant.ViewModels
 {
@@ -13,6 +16,7 @@ namespace Restaurant.ViewModels
     {
         private readonly IAuthService _auth;
         private readonly INavigationService _nav;
+        private readonly IServiceProvider _sp;
 
         private string _email = "";
         private string _password = "";
@@ -31,14 +35,16 @@ namespace Restaurant.ViewModels
 
         public ICommand LoginCommand { get; }
         public ICommand ShowRegisterCommand { get; }
+        public ICommand ShowMenuCommand { get; }
 
-        public LoginViewModel(IAuthService auth, INavigationService nav)
+        public LoginViewModel(IAuthService auth, INavigationService nav, IServiceProvider sp)
         {
             _auth = auth;
             _nav = nav;
-
+            _sp = sp;
             LoginCommand = new RelayCommand(_ => ExecuteLogin(), _ => CanLogin());
-            ShowRegisterCommand = new RelayCommand(_ => _nav.NavigateTo(nameof(RegisterViewModel)), _ => true);
+            ShowRegisterCommand = new RelayCommand(_ => ShowRegister());
+            ShowMenuCommand = new RelayCommand(_ => ShowMenu());
         }
 
         private bool CanLogin() =>
@@ -53,18 +59,41 @@ namespace Restaurant.ViewModels
                                 MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
+            Email = string.Empty;
+            Password = string.Empty;
             MessageBox.Show($"Welcome, {_auth.CurrentUser!.FirstName}!", "Login Successful",
                             MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // Refresh any role-based UI
+            if (_auth.CurrentUser!.Role == UserRole.Employee)
+            {
+                
+                var main = Application.Current.Windows
+                              .OfType<MainWindow>()
+                              .FirstOrDefault();
+                main?.Hide();
+               
+                var dash = _sp.GetRequiredService<EmployeeDashboardWindow>();
+                dash.Show();
+            }
+
+         
             CommandManager.InvalidateRequerySuggested();
 
-            // Go to the initial view for this role
-            //if (_auth.CurrentUser.Role == Models.UserRole.Employee)
-            //    _nav.NavigateTo(nameof(EmployeeDashboardViewModel));
-            //else
-            //    _nav.NavigateTo(nameof(MenuViewModel));
+          
+            if (_auth.CurrentUser.Role == Models.UserRole.Employee)
+                _nav.NavigateTo(nameof(EmployeeDashboardViewModel));
+        }
+
+        private void ShowMenu()
+        {
+            //_nav.NavigateTo(nameof(MenuViewModel));
+        }
+
+        private void ShowRegister()
+        {
+            Email = string.Empty;
+            Password = string.Empty;
+            _nav.NavigateTo(nameof(RegisterViewModel));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
