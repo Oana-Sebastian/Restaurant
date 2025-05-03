@@ -1,0 +1,75 @@
+﻿<Window x:Class="Restaurant.Views.AddEditDishWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add / Edit Dish" Height="500" Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Form fields -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Name:"/>
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Price:" Margin="0,5,0,0"/>
+            <TextBox Text="{Binding Price, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Portion (g):" Margin="0,5,0,0"/>
+            <TextBox Text="{Binding PortionQuantity, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Total in Stock (g):" Margin="0,5,0,0"/>
+            <TextBox Text="{Binding TotalQuantity, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Category:" Margin="0,5,0,0"/>
+            <ComboBox ItemsSource="{Binding Categories}"
+                DisplayMemberPath="Name"
+                SelectedItem="{Binding SelectedCategory}"/>
+        </StackPanel>
+
+        <!-- Allergens & Images -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Allergens -->
+            <GroupBox Header="Allergens" Grid.Column="0" Margin="0,0,5,0">
+                <ListBox x:Name="AllergensListBox"
+           ItemsSource="{Binding AvailableAllergens}"
+           SelectionMode="Extended"
+           SelectionChanged="AllergensListBox_SelectionChanged" />
+            </GroupBox>
+
+            <!-- Images -->
+            <GroupBox Header="Image URLs" Grid.Column="1" Margin="5,0,0,0">
+                <StackPanel>
+                    <ListBox ItemsSource="{Binding ImageUrls}" Height="150"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBox x:Name="ImageUrlBox" Width="200"/>
+                        <Button Content="Add" Width="50" Margin="5,0,0,0"
+                    Click="OnAddImageUrl"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+
+        <!-- Save / Cancel -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Save"   Width="75" Margin="0,0,5,0"
+              IsDefault="True"
+              Command="{Binding SaveCommand}"
+              CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+              IsEnabled="{Binding CanSave}"/>
+            <Button Content="Cancel" Width="75"
+              IsCancel="True"
+              Command="{Binding CancelCommand}"
+              CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+        </StackPanel>
+    </Grid>
+</Window>

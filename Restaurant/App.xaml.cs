@@ -48,7 +48,8 @@ namespace Restaurant
         sp.GetRequiredService<RestaurantDbContext>(),
         sp.GetRequiredService<IConfiguration>(),
         sp.GetRequiredService<IAuthService>(),
-        sp.GetRequiredService<INavigationService>()
+        sp.GetRequiredService<INavigationService>(),
+        sp.GetRequiredService<IServiceProvider>()
     )
 )
                 // … other VMs …
@@ -58,6 +59,7 @@ namespace Restaurant
                 .AddTransient<RegisterControl>()
                 .AddTransient<EmployeeDashboardControl>()
                 .AddTransient<EmployeeDashboardWindow>()
+                .AddTransient<AddEditDishWindow>()
                 .AddTransient<MenuControl>()
                 // App services (e.g. authentication, order service, etc.)
                 // …
@@ -92,7 +94,6 @@ namespace Restaurant
                     }
 
                     // Optional: create the DB if it doesn't exist
-
                     dbContext.Database.EnsureCreated();
                 }
                 catch (Exception ex)

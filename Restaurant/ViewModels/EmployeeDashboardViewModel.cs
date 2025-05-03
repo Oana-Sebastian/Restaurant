@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Restaurant.Data;
 using Restaurant.Helpers;
 using Restaurant.Models;
@@ -20,6 +21,7 @@ namespace Restaurant.ViewModels
         private readonly RestaurantDbContext _db;
         private readonly IAuthService _auth;
         private readonly INavigationService _nav;
+        private readonly IServiceProvider _sp;
         private readonly int _lowStockThreshold;
 
         public ObservableCollection<Category> Categories { get; }
@@ -32,7 +34,9 @@ namespace Restaurant.ViewModels
         public ObservableCollection<Dish> LowStockItems { get; }
 
         // Selected items
-        public Category? SelectedCategory { get; set; }
+        public Category? SelectedCategory { 
+            get; 
+            set; }
         public Dish? SelectedDish { get; set; }
         public Menu? SelectedMenu { get; set; }
         public Allergen? SelectedAllergen { get; set; }
@@ -60,11 +64,13 @@ namespace Restaurant.ViewModels
     RestaurantDbContext db,
     IConfiguration config,
     IAuthService auth,
-    INavigationService nav)
+    INavigationService nav,
+    IServiceProvider sp)
         {
             _db = db;
             _auth = auth;
             _nav = nav;
+            _sp = sp;
             _lowStockThreshold = config.GetValue<int>("Settings:LowStockThreshold");
 
             // LOAD ENTITIES WITH NAVIGATIONS
@@ -138,18 +144,47 @@ namespace Restaurant.ViewModels
             // COMMANDS
 
             AddCategoryCommand = new RelayCommand(_ => AddCategory(), _ => !string.IsNullOrWhiteSpace(NewCategoryName));
-            DeleteCategoryCommand = new RelayCommand(o => DeleteCategory((Category)o), _ => SelectedCategory != null);
+            DeleteCategoryCommand = new RelayCommand(_ =>DeleteCategory(SelectedCategory), _ => SelectedCategory != null && SelectedCategory.Name!=string.Empty);
 
             AddAllergenCommand = new RelayCommand(_ => AddAllergen(), _ => !string.IsNullOrWhiteSpace(NewAllergenName));
-            DeleteAllergenCommand = new RelayCommand(o => DeleteAllergen((Allergen)o), _ => SelectedAllergen != null);
+            DeleteAllergenCommand = new RelayCommand(_ => DeleteAllergen(SelectedAllergen), _ => SelectedAllergen != null);
 
-            AddDishCommand = new RelayCommand(_ => {/* Open AddDishDialog bound to a new DishViewModel */});
-            EditDishCommand = new RelayCommand(o => {/* Open EditDishDialog bound to SelectedDish */}, _ => SelectedDish != null);
-            DeleteDishCommand = new RelayCommand(o => DeleteDish((Dish)o), _ => SelectedDish != null);
+            AddDishCommand = new RelayCommand(_ =>
+            {
+                var dialog = _sp.GetRequiredService<AddEditDishWindow>();
+                var vm = new DishViewModel(_db, _sp); // new dish
+                dialog.DataContext = vm;
+                if (dialog.ShowDialog() == true)
+                {
+                    // Refresh the Dishes list:
+                    Dishes.Add(_db.Dishes
+                                  .Include(d => d.Category)
+                                  // ... same includes as before ...
+                                  .First(d => d.DishId == vm.DishId));
+                }
+            });
+
+            EditDishCommand = new RelayCommand(_ =>
+            {
+                if (SelectedDish == null) return;
+                var dialog = _sp.GetRequiredService<AddEditDishWindow>();
+                var vm = new DishViewModel(_db, _sp, SelectedDish);
+                dialog.DataContext = vm;
+                if (dialog.ShowDialog() == true)
+                {
+                    // Re-load SelectedDish from DB or just notify:
+                    var idx = Dishes.IndexOf(SelectedDish);
+                    Dishes[idx] = _db.Dishes
+                                       .Include(d => d.Category)
+                                       // ... includes ...
+                                       .First(d => d.DishId == SelectedDish.DishId);
+                }
+            }, _ => SelectedDish != null);
+            DeleteDishCommand = new RelayCommand(_ => DeleteDish(SelectedDish), _ => SelectedDish != null);
 
             AddMenuCommand = new RelayCommand(_ => {/* Open AddMenuDialog bound to a new MenuViewModel */});
             EditMenuCommand = new RelayCommand(o => {/* Open EditMenuDialog bound to SelectedMenu */}, _ => SelectedMenu != null);
-            DeleteMenuCommand = new RelayCommand(o => DeleteMenu((Menu)o), _ => SelectedMenu != null);
+            DeleteMenuCommand = new RelayCommand(_ => DeleteMenu(SelectedMenu), _ => SelectedMenu != null);
 
             AdvanceOrderStatusCommand = new RelayCommand(o => AdvanceOrderStatus((Order)o), _ => SelectedActiveOrder != null);
 
@@ -178,73 +213,189 @@ namespace Restaurant.ViewModels
 
 
         // Category logic
-        private void AddCategory()
-        {
-            var cat = new Category { Name = NewCategoryName.Trim() };
-            _db.Categories.Add(cat);
-            _db.SaveChanges();
-            Categories.Add(cat);
-            NewCategoryName = "";
-            OnPropertyChanged(nameof(NewCategoryName));
-        }
-        private void DeleteCategory(Category c)
-        {
-            _db.Categories.Remove(c);
-            _db.SaveChanges();
-            Categories.Remove(c);
-        }
+// Categories
+private void AddCategory()
+{
+    var name = NewCategoryName.Trim();
+    if (string.IsNullOrEmpty(name))
+    {
+        MessageBox.Show("Category name cannot be empty.", "Validation Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    if (_db.Categories.Any(c => c.Name == name))
+    {
+        MessageBox.Show("A category with that name already exists.", "Duplicate Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
 
-        // Allergen logic
-        private void AddAllergen()
-        {
-            var a = new Allergen { Name = NewAllergenName.Trim() };
-            _db.Allergens.Add(a);
-            _db.SaveChanges();
-            Allergens.Add(a);
-            NewAllergenName = "";
-            OnPropertyChanged(nameof(NewAllergenName));
-        }
-        private void DeleteAllergen(Allergen a)
-        {
-            _db.Allergens.Remove(a);
-            _db.SaveChanges();
-            Allergens.Remove(a);
-        }
+    var cat = new Category { Name = name };
+    _db.Categories.Add(cat);
+    _db.SaveChanges();
+    Categories.Add(cat);
 
-        // Dish/Menu logic & dialogs omitted for brevity…
+    NewCategoryName = "";
+    OnPropertyChanged(nameof(NewCategoryName));
+}
 
-        private void DeleteDish(Dish d)
-        {
-            _db.Dishes.Remove(d);
-            _db.SaveChanges();
-            Dishes.Remove(d);
-        }
-        private void DeleteMenu(Menu m)
-        {
-            _db.Menus.Remove(m);
-            _db.SaveChanges();
-            Menus.Remove(m);
-        }
+private void DeleteCategory(Category c)
+{
+    if (c == null)
+    {
+        MessageBox.Show("No category selected.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    // re-fetch from DB to ensure it still exists
+    var existing = _db.Categories.Find(c.CategoryId);
+    if (existing == null)
+    {
+        MessageBox.Show("That category no longer exists.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        Categories.Remove(c);
+        return;
+    }
 
-        // Orders
-        private void AdvanceOrderStatus(Order o)
-        {
-            // advance enum, e.g. Registered→Preparing→…
-            o.Status = o.Status switch
-            {
-                OrderStatus.Registered => OrderStatus.Preparing,
-                OrderStatus.Preparing => OrderStatus.OutForDelivery,
-                OrderStatus.OutForDelivery => OrderStatus.Delivered,
-                _ => o.Status
-            };
-            _db.SaveChanges();
+    _db.Categories.Remove(existing);
+    _db.SaveChanges();
+    Categories.Remove(c);
+}
 
-            // refresh collections
-            ActiveOrders.Remove(o);
-            AllOrders.Clear();
-            foreach (var ord in _db.Orders.Include(x => x.User).OrderByDescending(x => x.OrderDate))
-                AllOrders.Add(ord);
-        }
+// Allergens
+private void AddAllergen()
+{
+    var name = NewAllergenName.Trim();
+    if (string.IsNullOrEmpty(name))
+    {
+        MessageBox.Show("Allergen name cannot be empty.", "Validation Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    if (_db.Allergens.Any(a => a.Name == name))
+    {
+        MessageBox.Show("An allergen with that name already exists.", "Duplicate Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+
+    var a = new Allergen { Name = name };
+    _db.Allergens.Add(a);
+    _db.SaveChanges();
+    Allergens.Add(a);
+
+    NewAllergenName = "";
+    OnPropertyChanged(nameof(NewAllergenName));
+}
+
+private void DeleteAllergen(Allergen a)
+{
+    if (a == null)
+    {
+        MessageBox.Show("No allergen selected.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    var existing = _db.Allergens.Find(a.AllergenId);
+    if (existing == null)
+    {
+        MessageBox.Show("That allergen no longer exists.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        Allergens.Remove(a);
+        return;
+    }
+
+    _db.Allergens.Remove(existing);
+    _db.SaveChanges();
+    Allergens.Remove(a);
+}
+
+// Dishes
+private void DeleteDish(Dish d)
+{
+    if (d == null)
+    {
+        MessageBox.Show("No dish selected.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    var existing = _db.Dishes.Find(d.DishId);
+    if (existing == null)
+    {
+        MessageBox.Show("That dish no longer exists.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        Dishes.Remove(d);
+        return;
+    }
+
+    _db.Dishes.Remove(existing);
+    _db.SaveChanges();
+    Dishes.Remove(d);
+}
+
+// Menus
+private void DeleteMenu(Menu m)
+{
+    if (m == null)
+    {
+        MessageBox.Show("No menu selected.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    var existing = _db.Menus.Find(m.MenuId);
+    if (existing == null)
+    {
+        MessageBox.Show("That menu no longer exists.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        Menus.Remove(m);
+        return;
+    }
+
+    _db.Menus.Remove(existing);
+    _db.SaveChanges();
+    Menus.Remove(m);
+}
+
+// Orders
+private void AdvanceOrderStatus(Order o)
+{
+    if (o == null)
+    {
+        MessageBox.Show("No order selected.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+    var existing = _db.Orders.Find(o.OrderId);
+    if (existing == null)
+    {
+        MessageBox.Show("That order no longer exists.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+        ActiveOrders.Remove(o);
+        AllOrders.Remove(o);
+        return;
+    }
+
+    // advance enum
+    existing.Status = existing.Status switch
+    {
+        OrderStatus.Registered     => OrderStatus.Preparing,
+        OrderStatus.Preparing      => OrderStatus.OutForDelivery,
+        OrderStatus.OutForDelivery => OrderStatus.Delivered,
+        _                          => existing.Status
+    };
+    _db.SaveChanges();
+
+    // refresh collections
+    ActiveOrders.Remove(o);
+    AllOrders.Clear();
+    foreach (var ord in _db.Orders
+                         .Include(x => x.User)
+                         .OrderByDescending(x => x.OrderDate))
+    {
+        AllOrders.Add(ord);
+    }
+}
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string p = "") =>

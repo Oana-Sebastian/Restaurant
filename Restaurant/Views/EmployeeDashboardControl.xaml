@@ -32,35 +32,42 @@
                     <TabItem Header="Dishes">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Dishes}"
-                                     AutoGenerateColumns="False"
-                                     SelectedItem="{Binding SelectedDish}"
-                                     Height="250">
+              AutoGenerateColumns="False"
+              SelectedItem="{Binding SelectedDish}"
+              Height="250">
+
                                 <DataGrid.Columns>
-                                    <!-- Name -->
-                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                    <!-- 1) Denumire -->
+                                    <DataGridTextColumn Header="Name" 
+                            Binding="{Binding Name}" />
 
-                                    <!-- Category -->
-                                    <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" />
+                                    <!-- 2) Pret -->
+                                    <DataGridTextColumn Header="Price" 
+                            Binding="{Binding Price, StringFormat=C}" />
 
-                                    <!-- Portion (g) -->
-                                    <DataGridTextColumn Header="Portion (g)"
-                                                       Binding="{Binding PortionQuantity}" />
+                                    <!-- 3) Cantitate per portie -->
+                                    <DataGridTextColumn Header="Portion (g)" 
+                            Binding="{Binding PortionQuantity}" />
 
-                                    <!-- Price -->
-                                    <DataGridTextColumn Header="Price"
-                                                       Binding="{Binding Price, StringFormat=C}" />
+                                    <!-- 4) Cantitate totala in restaurant -->
+                                    <DataGridTextColumn Header="In Stock (g)" 
+                            Binding="{Binding TotalQuantity}" />
 
-                                    <!-- Allergens -->
+                                    <!-- 5) Categorie -->
+                                    <DataGridTextColumn Header="Category" 
+                            Binding="{Binding Category.Name}" />
+
+                                    <!-- 6) Lista alergeni -->
                                     <DataGridTemplateColumn Header="Allergens">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding DishAllergens, 
-                                                        Converter={StaticResource AllergenListConverter}}" />
+                                                <TextBlock Text="{Binding DishAllergens,
+                                Converter={StaticResource AllergenListConverter}}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- Images -->
+                                    <!-- 7) Galerie de imagini -->
                                     <DataGridTemplateColumn Header="Images">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -73,39 +80,28 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Image Source="{Binding Url}"
-                                                                  Width="40" Height="40"
-                                                                  Margin="2" />
+                           Width="40" Height="40"
+                           Margin="2"/>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-
-                                    <!-- Availability -->
-                                    <DataGridTemplateColumn Header="Status">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding AvailabilityText}"
-                                                          Foreground="Red"
-                                                          Visibility="{Binding IsAvailable,
-                                                                      Converter={StaticResource BoolToVisibilityConverter},
-                                                                      ConverterParameter=Invert}" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
 
+                            <!-- CRUD Buttons -->
                             <StackPanel Orientation="Horizontal" Margin="0,5">
                                 <Button Content="Add"    Command="{Binding AddDishCommand}" />
                                 <Button Content="Edit"   Command="{Binding EditDishCommand}"
-                                       CommandParameter="{Binding SelectedDish}" />
+              CommandParameter="{Binding SelectedDish}" />
                                 <Button Content="Delete" Command="{Binding DeleteDishCommand}"
-                                       CommandParameter="{Binding SelectedDish}" />
+              CommandParameter="{Binding SelectedDish}" />
                             </StackPanel>
                         </StackPanel>
                     </TabItem>
+
 
                     <!-- Menus -->
                     <TabItem Header="Menus">

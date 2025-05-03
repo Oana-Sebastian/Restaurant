@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,11 +23,14 @@ namespace Restaurant.Models
         public Category? Category { get; set; }
 
        
-        public ICollection<DishAllergen>? DishAllergens { get; set; }
+        //public ICollection<DishAllergen>? DishAllergens { get; set; }
+        public ICollection<DishAllergen> DishAllergens { get; set; } = new List<DishAllergen>();
 
+        [NotMapped]
         public IEnumerable<Allergen> Allergens
             => DishAllergens?.Select(da => da.Allergen)
                ?? Enumerable.Empty<Allergen>();
+        //public ICollection<Allergen> Allergens { get; set; } = new List<Allergen>();
 
         public ICollection<DishImage>? Images { get; set; }
 
