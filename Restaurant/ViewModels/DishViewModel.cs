@@ -70,6 +70,7 @@ namespace Restaurant.ViewModels
         // Commands
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand DeleteImageUrlCommand { get; }
 
         public bool CanSave =>
             !string.IsNullOrWhiteSpace(Name)
@@ -130,73 +131,14 @@ namespace Restaurant.ViewModels
             {
                 if (win is Window w) w.DialogResult = false;
             });
+
+            DeleteImageUrlCommand = new RelayCommand(urlObj =>
+            {
+                if (urlObj is string url && ImageUrls.Contains(url))
+                    ImageUrls.Remove(url);
+            });
         }
 
-        //private void Save(IServiceProvider sp)
-        //{
-        //    // 1) Add or update the dish itself, and immediately save so _dish.DishId is set
-        //    if (_isNew)
-        //        _db.Dishes.Add(_dish);
-        //    else
-        //    {
-        //        _dish.Category = null!;
-        //        _db.Dishes.Update(_dish);
-        //    }
-
-        //    _db.SaveChanges();   // <-- flush here, now _dish.DishId is known
-
-        //    // 2) Now handle allergens (join table)
-        //    //    First remove any old links:
-        //    var oldLinks = _db.DishAllergens
-        //          .Where(da => da.DishId == _dish.DishId);
-        //    _db.DishAllergens.RemoveRange(oldLinks);
-        //    _db.SaveChanges();
-
-        //    //    Then add the selected ones:
-
-        //    //foreach (var alg in SelectedAllergens.Distinct())
-        //    //{
-        //    //    _db.DishAllergens.Add(new DishAllergen
-        //    //    {
-        //    //        DishId = _dish.DishId,
-        //    //        AllergenId = alg.AllergenId
-        //    //    });
-        //    //}
-
-        //    foreach (var alg in SelectedAllergens.Distinct())
-        //    {
-        //        var da = new DishAllergen
-        //        {
-        //            DishId = _dish.DishId,
-        //            AllergenId = alg.AllergenId,
-        //            Allergen = null!        // explicitly clear the nav
-        //        };
-        //        _db.DishAllergens.Add(da);
-        //    }
-
-        //    // 3) Likewise for images
-        //    var oldImages = _db.Set<DishImage>()
-        //                       .Where(i => i.DishId == _dish.DishId);
-        //    _db.Set<DishImage>().RemoveRange(oldImages);
-        //    _db.SaveChanges();
-        //    foreach (var url in ImageUrls.Distinct())
-        //    {
-        //        _db.Set<DishImage>().Add(new DishImage
-        //        {
-        //            DishId = _dish.DishId,
-        //            Url = url
-        //        });
-        //    }
-
-        //    // 4) Finally, save changes for join‐table rows
-        //    _db.SaveChanges();
-
-        //    // 5) Close dialog
-        //    var win = Application.Current.Windows
-        //                 .OfType<Window>()
-        //                 .FirstOrDefault(w => w.DataContext == this);
-        //    if (win != null) win.DialogResult = true;
-        //}
         private void Save()
         {
             // 1) Save the Dish (and get its new DishId)

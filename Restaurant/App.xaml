@@ -7,6 +7,7 @@
             <!-- Define BoolToVisibilityConverter as a resource -->
             <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <helpers:AllergenListConverter x:Key="AllergenListConverter" />
+            <helpers:CollectionContainsConverter x:Key="CollectionContainsConverter"/>
     </Application.Resources>
 
 </Application>

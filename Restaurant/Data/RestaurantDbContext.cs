@@ -27,7 +27,6 @@ namespace Restaurant.Data
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<DishImage> DishImages { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

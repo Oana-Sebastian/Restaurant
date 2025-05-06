@@ -13,5 +13,6 @@ namespace Restaurant.Models
         public int DishId { get; set; }
         public Dish? Dish { get; set; }
         public int Quantity { get; set; }
+        public int MenuPortionGrams { get; set; }
     }
 }

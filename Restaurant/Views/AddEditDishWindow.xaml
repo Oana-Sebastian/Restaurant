@@ -1,8 +1,8 @@
 ﻿<Window x:Class="Restaurant.Views.AddEditDishWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Add / Edit Dish" Height="500" Width="400"
-        WindowStartupLocation="CenterOwner"
+        Title="Add / Edit Dish" Height="500" Width="600"
+        WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -42,20 +42,59 @@
             <GroupBox Header="Allergens" Grid.Column="0" Margin="0,0,5,0">
                 <ListBox x:Name="AllergensListBox"
            ItemsSource="{Binding AvailableAllergens}"
+           DisplayMemberPath="Name"
            SelectionMode="Extended"
            SelectionChanged="AllergensListBox_SelectionChanged" />
             </GroupBox>
+            <!--<GroupBox Header="Allergens" Grid.Row="1" Grid.Column="0" Margin="0,5,5,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
+                    <ItemsControl ItemsSource="{Binding AvailableAllergens}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}"
+                        Margin="2"
+                        IsChecked="{Binding DataContext.SelectedAllergens,
+                                    RelativeSource={RelativeSource AncestorType=Window},
+                                    Converter={StaticResource CollectionContainsConverter},
+                                    ConverterParameter={Binding}}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </GroupBox>-->
+
 
             <!-- Images -->
-            <GroupBox Header="Image URLs" Grid.Column="1" Margin="5,0,0,0">
-                <StackPanel>
-                    <ListBox ItemsSource="{Binding ImageUrls}" Height="150"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <TextBox x:Name="ImageUrlBox" Width="200"/>
+            <GroupBox Header="Image URLs" Grid.Row="1" Grid.Column="1" Margin="5,5,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding ImageUrls}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="2">
+                                        <TextBlock Text="{Binding}" Width="200" TextTrimming="CharacterEllipsis"/>
+                                        <Button Content="Delete"
+                          Command="{Binding DataContext.DeleteImageUrlCommand,
+                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                          CommandParameter="{Binding}"
+                          Margin="5,0,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBox x:Name="ImageUrlBox" Width="218"/>
                         <Button Content="Add" Width="50" Margin="5,0,0,0"
-                    Click="OnAddImageUrl"/>
+                  Click="OnAddImageUrl"/>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </GroupBox>
         </Grid>
 

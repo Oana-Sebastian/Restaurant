@@ -60,6 +60,7 @@ namespace Restaurant
                 .AddTransient<EmployeeDashboardControl>()
                 .AddTransient<EmployeeDashboardWindow>()
                 .AddTransient<AddEditDishWindow>()
+                .AddTransient<AddEditMenuWindow>()
                 .AddTransient<MenuControl>()
                 // App services (e.g. authentication, order service, etc.)
                 // …
@@ -94,6 +95,7 @@ namespace Restaurant
                     }
 
                     // Optional: create the DB if it doesn't exist
+                    //dbContext.Database.EnsureDeleted();
                     dbContext.Database.EnsureCreated();
                 }
                 catch (Exception ex)
