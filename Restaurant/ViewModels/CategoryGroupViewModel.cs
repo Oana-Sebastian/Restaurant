@@ -11,13 +11,13 @@ namespace Restaurant.ViewModels
 {
     public class CategoryGroupViewModel
     {
-        public string Name { get; }
+        public string CategoryName { get; }
         public ObservableCollection<DishItemViewModel> Dishes { get; }
-        public ObservableCollection<CompositeMenuViewModel> Menus { get; }
+        public ObservableCollection<MenuListItemViewModel> Menus { get; }
 
         public CategoryGroupViewModel(Category cat, IConfiguration config)
         {
-            Name = cat.Name;
+            CategoryName = cat.Name;
 
             // Dishes
             Dishes = new ObservableCollection<DishItemViewModel>(
@@ -25,8 +25,8 @@ namespace Restaurant.ViewModels
             );
 
             // Menus
-            Menus = new ObservableCollection<CompositeMenuViewModel>(
-                cat.Menus.Select(m => new CompositeMenuViewModel(m, config))
+            Menus = new ObservableCollection<MenuListItemViewModel>(
+                cat.Menus.Select(m => new MenuListItemViewModel(m, config))
             );
         }
     }
