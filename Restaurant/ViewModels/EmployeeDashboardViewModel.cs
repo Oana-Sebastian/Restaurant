@@ -13,7 +13,7 @@ using Restaurant.Helpers;
 using Restaurant.Models;
 using Restaurant.Service;
 using Restaurant.Views;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+//using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Restaurant.ViewModels
 {
@@ -25,6 +25,21 @@ namespace Restaurant.ViewModels
         private readonly IServiceProvider _sp;
         private readonly IConfiguration _config;
         private readonly int _lowStockThreshold;
+        private int _selectedTabIndex;
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set
+            {
+                if (_selectedTabIndex == value) return;
+                _selectedTabIndex = value;
+                OnPropertyChanged();
+
+                // Suppose "Low Stock" is tab #3 (zero-based: 0=Catalogs, 1=All Orders, 2=Active Orders, 3=Low Stock)
+                if (_selectedTabIndex == 3)
+                    RefreshLowStockItems();
+            }
+        }
 
         public ObservableCollection<Category> Categories { get; }
         public ObservableCollection<Dish> Dishes { get; }
@@ -136,7 +151,7 @@ namespace Restaurant.ViewModels
             );
 
             LowStockItems = new ObservableCollection<Dish>(
-                Dishes.Where(d => d.TotalQuantity <= _lowStockThreshold)
+                Dishes.Where(d => (d.TotalQuantity/d.PortionQuantity) <= _lowStockThreshold)
                       .ToList()
             );
 
@@ -180,6 +195,7 @@ namespace Restaurant.ViewModels
 
                 }
             }, _ => SelectedDish != null);
+
 
             DeleteDishCommand = new RelayCommand(_ => DeleteDish(SelectedDish), _ => SelectedDish != null);
 
@@ -261,30 +277,7 @@ namespace Restaurant.ViewModels
             OnPropertyChanged(nameof(NewCategoryName));
         }
 
-        //private void DeleteCategory(Category c)
-        //{
-        //    if (c == null)
-        //    {
-        //        MessageBox.Show("No category selected.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        return;
-        //    }
-        //    // re-fetch from DB to ensure it still exists
-        //    var existing = _db.Categories.Find(c.CategoryId);
-        //    if (existing == null)
-        //    {
-        //        MessageBox.Show("That category no longer exists.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        Categories.Remove(c);
-        //        return;
-        //    }
-
-        //    _db.Categories.Remove(existing);
-        //    _db.SaveChanges();
-        //    Categories.Remove(c);
-        //}
-
-        // Allergens
+      
 
         private void DeleteCategory(Category c)
         {
@@ -355,32 +348,6 @@ namespace Restaurant.ViewModels
             NewAllergenName = "";
             OnPropertyChanged(nameof(NewAllergenName));
         }
-
-        //private void DeleteAllergen(Allergen a)
-        //{
-        //    if (a == null)
-        //    {
-        //        MessageBox.Show("No allergen selected.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        return;
-        //    }
-        //    var existing = _db.Allergens.Find(a.AllergenId);
-        //    if (existing == null)
-        //    {
-        //        MessageBox.Show("That allergen no longer exists.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        Allergens.Remove(a);
-        //        return;
-        //    }
-
-        //    _db.Allergens.Remove(existing);
-        //    _db.SaveChanges();
-        //    Allergens.Remove(a);
-        //}
-
-
-
-        // Dishes
 
         private void DeleteAllergen(Allergen a)
         {
@@ -478,33 +445,6 @@ namespace Restaurant.ViewModels
             Dishes.Remove(d);
         }
 
-
-        // Menus
-        //        private void DeleteMenu(Menu m)
-        //{
-        //    if (m == null)
-        //    {
-        //        MessageBox.Show("No menu selected.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        return;
-        //    }
-        //    var existing = _db.Menus.Find(m.MenuId);
-        //    if (existing == null)
-        //    {
-        //        MessageBox.Show("That menu no longer exists.", "Error",
-        //                        MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        Menus.Remove(m);
-        //        return;
-        //    }
-
-        //    _db.Menus.Remove(existing);
-        //    _db.SaveChanges();
-        //    Menus.Remove(m);
-        //}
-
-        // Orders
-
-
         private void DeleteMenu(MenuListItemViewModel vm)
         {
             if (vm == null)
@@ -574,6 +514,20 @@ namespace Restaurant.ViewModels
             }
         }
 
+        public void RefreshLowStockItems()
+        {
+            LowStockItems.Clear();
+            foreach (var d in Dishes)
+            {
+                // number of full portions remaining:
+                var portionsLeft = d.PortionQuantity > 0
+                    ? d.TotalQuantity / d.PortionQuantity
+                    : 0;
+
+                if (portionsLeft <= _lowStockThreshold)
+                    LowStockItems.Add(d);
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string p = "") =>

@@ -86,7 +86,7 @@ namespace Restaurant.ViewModels
 
         private void ShowMenu()
         {
-            //_nav.NavigateTo(nameof(MenuViewModel));
+            _nav.NavigateTo(nameof(MenuViewModel));
         }
 
         private void ShowRegister()

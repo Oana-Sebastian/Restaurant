@@ -46,23 +46,6 @@
            SelectionMode="Extended"
            SelectionChanged="AllergensListBox_SelectionChanged" />
             </GroupBox>
-            <!--<GroupBox Header="Allergens" Grid.Row="1" Grid.Column="0" Margin="0,5,5,0">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
-                    <ItemsControl ItemsSource="{Binding AvailableAllergens}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding Name}"
-                        Margin="2"
-                        IsChecked="{Binding DataContext.SelectedAllergens,
-                                    RelativeSource={RelativeSource AncestorType=Window},
-                                    Converter={StaticResource CollectionContainsConverter},
-                                    ConverterParameter={Binding}}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </GroupBox>-->
-
 
             <!-- Images -->
             <GroupBox Header="Image URLs" Grid.Row="1" Grid.Column="1" Margin="5,5,0,0">

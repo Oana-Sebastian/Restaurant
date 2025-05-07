@@ -3,7 +3,7 @@
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             Height="Auto" Width="Auto">
     <Grid>
-        <TabControl>
+        <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
 
             <!-- 1. Manage Categories, Dishes, Menus, Allergens -->
             <TabItem Header="Catalogs">
@@ -21,7 +21,7 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                             <StackPanel Orientation="Horizontal" Margin="0,5">
-                                <TextBox Width="200" Text="{Binding NewCategoryName}" />
+                                <TextBox Width="200" Text="{Binding NewCategoryName,UpdateSourceTrigger=PropertyChanged}" />
                                 <Button Content="Add" Command="{Binding AddCategoryCommand}" Margin="5,0"/>
                                 <Button Content="Delete" Command="{Binding DeleteCategoryCommand}" 
                                        CommandParameter="{Binding SelectedCategory}" />
@@ -41,30 +41,30 @@
                                 <DataGrid.Columns>
                                     <!-- 1) Denumire -->
                                     <DataGridTextColumn Header="Name" 
-                            Binding="{Binding Name}" />
+                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!-- 2) Pret -->
                                     <DataGridTextColumn Header="Price" 
-                            Binding="{Binding Price, StringFormat=C}" />
+                            Binding="{Binding Price, StringFormat=C, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!-- 3) Cantitate per portie -->
                                     <DataGridTextColumn Header="Portion (g)" 
-                            Binding="{Binding PortionQuantity}" />
+                            Binding="{Binding PortionQuantity, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!-- 4) Cantitate totala in restaurant -->
                                     <DataGridTextColumn Header="In Stock (g)" 
-                            Binding="{Binding TotalQuantity}" />
+                            Binding="{Binding TotalQuantity, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!-- 5) Categorie -->
                                     <DataGridTextColumn Header="Category" 
-                            Binding="{Binding Category.Name}" />
+                            Binding="{Binding Category.Name, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <!-- 6) Lista alergeni -->
                                     <DataGridTemplateColumn Header="Allergens">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding DishAllergens,
-                                Converter={StaticResource AllergenListConverter}}"/>
+                                Converter={StaticResource AllergenListConverter}, UpdateSourceTrigger=PropertyChanged}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
@@ -143,6 +143,25 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
+                                    <DataGridTemplateColumn Header="Allergens">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ItemsControl ItemsSource="{Binding AllergensList}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Vertical"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
                                     <!-- 3) Price after discount -->
                                     <DataGridTextColumn Header="Price"
                             Binding="{Binding Price, StringFormat=C}" />
@@ -178,16 +197,16 @@
                     <TabItem Header="Allergens">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Allergens}"
-                                     AutoGenerateColumns="True"
+                                     AutoGenerateColumns="False"
                                      SelectedItem="{Binding SelectedAllergen}"
-                                      IsReadOnly="False"
+                                      IsReadOnly="True"
                                      Height="200">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                             <StackPanel Orientation="Horizontal" Margin="0,5">
-                                <TextBox Width="200" Text="{Binding NewAllergenName}" />
+                                <TextBox Width="200" Text="{Binding NewAllergenName, UpdateSourceTrigger=PropertyChanged}" />
                                 <Button Content="Add"    Command="{Binding AddAllergenCommand}" Margin="5,0"/>
                                 <Button Content="Delete" Command="{Binding DeleteAllergenCommand}" 
                                        CommandParameter="{Binding SelectedAllergen}" />

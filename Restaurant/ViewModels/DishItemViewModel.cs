@@ -31,7 +31,6 @@ namespace Restaurant.ViewModels
               )
             : string.Empty;
             ImageUrls = d.Images.Select(i => i.Url).ToArray();  // your nav
-            // assume d.TotalQuantity holds total grams:
             IsAvailable = d.TotalQuantity >= d.PortionQuantity;
         }
     }

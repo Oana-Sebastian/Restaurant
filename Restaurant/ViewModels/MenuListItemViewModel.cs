@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,19 @@ namespace Restaurant.ViewModels
         public decimal Price { get; }
         public bool IsAvailable { get; }
         public IEnumerable<string> Items { get; }
+        public ObservableCollection<MenuItem> MenuItems { get; set; }
+        public IEnumerable<string> AllergensList
+        {
+            get
+            {
+                return MenuItems?
+                       .SelectMany(mi => mi.Dish?.DishAllergens ?? Enumerable.Empty<DishAllergen>())
+                       .Select(da => da.Allergen?.Name)
+                       .Where(name => !string.IsNullOrWhiteSpace(name))
+                       .Distinct()
+                       .ToList();
+            }
+        }
 
         public string AvailabilityText =>
             IsAvailable ? "" : "Indisponibil";
@@ -45,6 +59,7 @@ namespace Restaurant.ViewModels
             Items = m.MenuItems.Select(mi =>
                 $"{mi.Dish.Name} – {mi.MenuPortionGrams}g"
             ).ToList();
+
         }
     }
 
