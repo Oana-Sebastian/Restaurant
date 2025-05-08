@@ -113,14 +113,29 @@ namespace Restaurant.ViewModels
                    .ToList()
             );
 
+            //            Menus = new ObservableCollection<MenuListItemViewModel>(
+            //    _db.Menus
+            //       .Include(m => m.Category)
+            //       .Include(m => m.MenuItems).ThenInclude(mi => mi.Dish)
+            //       .AsNoTracking()
+            //       .ToList()
+            //       .Select(m => new MenuListItemViewModel(m, _config))
+            //);
             Menus = new ObservableCollection<MenuListItemViewModel>(
-    _db.Menus
-       .Include(m => m.Category)
-       .Include(m => m.MenuItems).ThenInclude(mi => mi.Dish)
-       .AsNoTracking()
-       .ToList()
-       .Select(m => new MenuListItemViewModel(m, _config))
-);
+                _db.Menus
+                    .Include(m => m.Category)
+                    .Include(m => m.MenuItems)
+                        .ThenInclude(mi => mi.Dish)
+                            .ThenInclude(d => d.DishAllergens)
+                                .ThenInclude(da => da.Allergen)
+                    .Include(m => m.MenuItems)
+                        .ThenInclude(mi => mi.Dish)
+                            .ThenInclude(d => d.Images)
+                    .AsNoTracking()
+                    .ToList()
+                    .Select(m => new MenuListItemViewModel(m, _config))
+            );
+
 
             Allergens = new ObservableCollection<Allergen>(
                 _db.Allergens

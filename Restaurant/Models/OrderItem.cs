@@ -17,5 +17,6 @@ namespace Restaurant.Models
         public int? MenuId { get; set; }
         public Menu? Menu { get; set; }
         public int Quantity { get; set; }
+        public decimal PriceAtOrder { get; set; }
     }
 }

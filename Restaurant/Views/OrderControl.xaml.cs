@@ -12,19 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Restaurant.ViewModels;
 
 namespace Restaurant.Views
 {
     /// <summary>
-    /// Interaction logic for MenuControl.xaml
+    /// Interaction logic for OrderControl.xaml
     /// </summary>
-    public partial class MenuControl : UserControl
+    public partial class OrderControl : UserControl
     {
-        public MenuControl(MenuViewModel vm)
+        public OrderControl()
         {
             InitializeComponent();
-            DataContext = vm;
         }
     }
 }

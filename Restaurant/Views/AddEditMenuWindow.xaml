@@ -16,7 +16,7 @@
             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Text="Category:" Margin="0,5,0,0"/>
-            <ComboBox ItemsSource="{Binding Categories}"
+            <ComboBox ItemsSource="{Binding CatCategories}"
                 DisplayMemberPath="Name"
                 SelectedItem="{Binding SelectedCategory}"/>
         </StackPanel>

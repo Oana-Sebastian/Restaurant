@@ -47,8 +47,8 @@ namespace Restaurant.ViewModels
             //                                           _ => true);
             NavigateMenuCommand = new RelayCommand(_ => NavigateTo(nameof(MenuViewModel)),
                                                        _ => true);
-            //NavigateOrderCommand = new RelayCommand(_ => NavigateTo(nameof(OrderViewModel)),
-            //                                           _ => _auth.CurrentUser?.Role == Models.UserRole.Client);
+            NavigateOrderCommand = new RelayCommand(_ => NavigateTo(nameof(OrderViewModel)),
+                                                       _ => _auth.CurrentUser?.Role == Models.UserRole.Client);
             NavigateManageCommand = new RelayCommand(_ => NavigateTo(nameof(EmployeeDashboardViewModel)),
                                                        _ => _auth.CurrentUser?.Role == Models.UserRole.Employee);
             LogoutCommand = new RelayCommand(_ =>
@@ -85,6 +85,10 @@ namespace Restaurant.ViewModels
                 case nameof(MenuViewModel):
                     view = _sp.GetRequiredService<MenuControl>();
                     viewModel = _sp.GetRequiredService<MenuViewModel>();
+                    break;
+                case nameof(OrderViewModel):
+                    view = _sp.GetRequiredService<OrderControl>();
+                    viewModel = _sp.GetRequiredService<OrderViewModel>();
                     break;
                 // … add your other cases here …
 

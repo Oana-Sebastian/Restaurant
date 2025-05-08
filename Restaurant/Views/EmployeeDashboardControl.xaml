@@ -90,6 +90,17 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Status">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding AvailabilityText}"
+Foreground="Red"
+Visibility="{Binding IsAvailable,
+             Converter={StaticResource BoolToVisibilityConverter},
+             ConverterParameter=Invert}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -124,10 +135,10 @@
 
                                     
 
-                                    <DataGridTemplateColumn Header="Items">
+                                    <DataGridTemplateColumn Header="Items" IsReadOnly="True">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                <ItemsControl ItemsSource="{Binding Components}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Vertical"/>
@@ -135,7 +146,12 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding}"/>
+                                                            <TextBlock>
+      <Run Text="{Binding Dish, Mode=OneWay}" />
+      <Run Text=" – " />
+      <Run Text="{Binding Grams, Mode=OneWay}" />
+      <Run Text="g" />
+                                                            </TextBlock>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -146,10 +162,10 @@
                                     <DataGridTemplateColumn Header="Allergens">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <ItemsControl ItemsSource="{Binding AllergensList}">
+                                                <ItemsControl ItemsSource="{Binding MenuAllergensDisplay}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Vertical"/>
+                                                            <StackPanel Orientation="Horizontal"/>
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>

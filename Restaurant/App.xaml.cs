@@ -41,7 +41,6 @@ namespace Restaurant
                 .AddTransient<LoginViewModel>()
                 .AddTransient<RegisterViewModel>()
                //.AddTransient<SearchViewModel>()
-                .AddTransient<MenuViewModel>()
                //.AddTransient<OrderViewModel>()
                .AddTransient<EmployeeDashboardViewModel>(sp =>
     new EmployeeDashboardViewModel(
@@ -52,7 +51,11 @@ namespace Restaurant
         sp.GetRequiredService<IServiceProvider>()
     )
 )
-                // … other VMs …
+               //.AddTransient<MenuListItemViewModel>()
+
+
+                
+               // … other VMs …
 
                 // UserControls
                 .AddTransient<LoginControl>()
@@ -61,7 +64,15 @@ namespace Restaurant
                 .AddTransient<EmployeeDashboardWindow>()
                 .AddTransient<AddEditDishWindow>()
                 .AddTransient<AddEditMenuWindow>()
+                .AddTransient<MenuViewModel>(sp =>
+      new MenuViewModel(
+          sp.GetRequiredService<RestaurantDbContext>(),
+          sp.GetRequiredService<IConfiguration>()
+      )
+  )
                 .AddTransient<MenuControl>()
+                .AddTransient<OrderViewModel>()
+                .AddTransient<OrderControl>()
                 // App services (e.g. authentication, order service, etc.)
                 // …
                 .AddScoped<LoginViewModel>()
@@ -69,7 +80,6 @@ namespace Restaurant
                 .AddScoped<EmployeeDashboardViewModel>()
 
                 .AddSingleton<MainWindow>()
-                //.AddScoped<MainMenuViewModel>()
             ;
 
             ServiceProvider = services.BuildServiceProvider();

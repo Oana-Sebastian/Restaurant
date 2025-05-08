@@ -39,8 +39,10 @@ namespace Restaurant.Models
         
         public ICollection<OrderItem>? OrderItems { get; set; }
 
+        public string AvailabilityText => IsAvailable ? "" : "Indisponibil";
        
         public bool IsAvailable => TotalQuantity >= PortionQuantity;
+
     }
 
     

@@ -8,6 +8,7 @@
             <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <helpers:AllergenListConverter x:Key="AllergenListConverter" />
             <helpers:CollectionContainsConverter x:Key="CollectionContainsConverter"/>
+            <helpers:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter"/>
     </Application.Resources>
 
 </Application>

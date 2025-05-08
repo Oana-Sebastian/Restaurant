@@ -71,13 +71,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Restaurant.Data;
 using Restaurant.Models;
 
 namespace Restaurant.ViewModels
 {
     public class MenuListItemViewModel
     {
+        private readonly RestaurantDbContext _db;
         public int MenuId { get; }
         public string Name { get; }
         public string CategoryName { get; }
@@ -105,10 +108,11 @@ namespace Restaurant.ViewModels
         /// <summary>
         /// All allergens across all component dishes, comma-separated.
         /// </summary>
-        public string AllergensDisplay { get; }
+        public string MenuAllergensDisplay { get; }
 
         public MenuListItemViewModel(Menu m, IConfiguration cfg)
         {
+
             MenuId = m.MenuId;
             Name = m.Name;
             CategoryName = m.Category.Name;
@@ -134,13 +138,20 @@ namespace Restaurant.ViewModels
 
             // Allergens: distinct across all dishes
             var allergens = m.MenuItems
-                             .SelectMany(mi => mi.Dish.DishAllergens)
-                             .Select(da => da.Allergen.Name)
-                             .Distinct()
-                             .ToList();
-            AllergensDisplay = allergens.Count > 0
+                     .Where(mi => mi.Dish?.DishAllergens != null)
+                     .SelectMany(mi => mi.Dish.DishAllergens)
+                     .Where(da => da?.Allergen != null)
+                     .Select(da => da.Allergen.Name)
+                     .Distinct()
+                     .ToList();
+            MenuAllergensDisplay = allergens.Count > 0
                 ? string.Join(", ", allergens)
                 : "Fără alergeni";
+
+            System.Diagnostics.Debug.WriteLine(
+    $"Menu \"{Name}\" has {m.MenuItems.Count} items and " +
+    $"{m.MenuItems.Sum(mi => mi.Dish.DishAllergens?.Count ?? 0)} allergen‐links"
+);
         }
 
         public class ComponentDto

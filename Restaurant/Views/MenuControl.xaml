@@ -38,7 +38,7 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <TextBlock Text="&#x26A0; {Binding AvailabilityText}"
+                                            <TextBlock Text="⚠ Indisponibil"
                                  Foreground="Red"
                                  Visibility="{Binding IsAvailable,
                                                 Converter={StaticResource BoolToVisibilityConverter},
@@ -84,15 +84,16 @@
                                             <TextBlock Text="Alergeni: "
                      FontWeight="Bold"
                      Margin="0,4,0,0"/>
-                                            <TextBlock Text="{Binding AllergensDisplay}"
+                                            <TextBlock Text="{Binding MenuAllergensDisplay}"
                      TextWrapping="Wrap"/>
+
 
                                             <!-- Price -->
                                             <TextBlock Text="{Binding Price, StringFormat=C}"
                      Margin="0,4,0,0"/>
 
                                             <!-- Availability Warning -->
-                                            <TextBlock Text="⚠ {Binding AvailabilityText}"
+                                            <TextBlock Text="⚠ Indisponibil"
                      Foreground="Red"
                      Visibility="{Binding IsAvailable,
                                    Converter={StaticResource BoolToVisibilityConverter},

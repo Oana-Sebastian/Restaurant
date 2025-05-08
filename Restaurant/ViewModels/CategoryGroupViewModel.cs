@@ -24,6 +24,7 @@ namespace Restaurant.ViewModels
                 cat.Dishes.Select(d => new DishItemViewModel(d, config))
             );
 
+
             // Menus
             Menus = new ObservableCollection<MenuListItemViewModel>(
                 cat.Menus.Select(m => new MenuListItemViewModel(m, config))
