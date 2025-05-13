@@ -23,34 +23,57 @@ namespace Restaurant.ViewModels
         public ObservableCollection<CategoryGroupViewModel> Categories { get; }
         public ObservableCollection<MenuListItemViewModel> Menus { get; }
 
+        public string Name { get; set; } = "";
+        public ObservableCollection<Category> CatCategories { get; }
+        private Category? _selectedCategory;
+        public Category? SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                _selectedCategory = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanSave));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        // Dishes-to-add picklist
+        public ObservableCollection<Dish> AvailableDishes { get; }
+        private Dish? _selectedAvailableDish;
+        public Dish? SelectedAvailableDish
+        {
+            get => _selectedAvailableDish;
+            set { _selectedAvailableDish = value; OnPropertyChanged(); }
+        }
+
+        private int _newPortion;
+        public int NewPortion
+        {
+            get => _newPortion;
+            set { _newPortion = value; OnPropertyChanged(); }
+        }
+
+        // Current menu items
+        public ObservableCollection<MenuItemDto> Items { get; }
+
+        // Commands
+        public ICommand AddItemCommand { get; }
+        public ICommand RemoveItemCommand { get; }
+        public DelegateCommand SaveCommand { get; }
+        public ICommand CancelCommand { get; }
+
+        public bool CanSave =>
+            !string.IsNullOrWhiteSpace(Name)
+            && SelectedCategory != null
+            && Items.Count >= 2;
+
+        public int? MenuId { get; }  // for edit
         public MenuViewModel(RestaurantDbContext db, IConfiguration config, Menu? existing = null)
         {
             // Load all categories
 
             _db = db;
             _config = config;
-            //    Categories = new ObservableCollection<CategoryGroupViewModel>(
-            //db.Categories
-            //  .Include(c => c.Dishes)
-            //    .ThenInclude(d => d.DishAllergens).ThenInclude(da => da.Allergen)
-            //  .Include(c => c.Dishes).ThenInclude(d => d.Images)
-            //  .Include(c => c.Menus).ThenInclude(m => m.MenuItems).ThenInclude(mi => mi.Dish)
-            //  .AsNoTracking()
-            //  .ToList()
-            //  .Select(c => new CategoryGroupViewModel(c, _config)));
-
-            //    var raw = db.Menus
-            //    .Include(m => m.Category)
-            //    .Include(m => m.MenuItems)
-            //        .ThenInclude(mi => mi.Dish)
-            //            .ThenInclude(d => d.DishAllergens)
-            //                .ThenInclude(da => da.Allergen)   // ← this line is critical!
-            //    .Include(m => m.MenuItems)
-            //        .ThenInclude(mi => mi.Dish)
-            //            .ThenInclude(d => d.Images)
-            //    .AsNoTracking()
-            //    .ToList();
-
+            
             var rawCats = db.Categories
             .Include(c => c.Dishes)
                 .ThenInclude(d => d.DishAllergens)
@@ -119,108 +142,6 @@ namespace Restaurant.ViewModels
             
         }
 
-    
-
-    //public class MenuViewModel : INotifyPropertyChanged    //{
-
-
-  
-
-
-
-        // Form fields
-        public string Name { get; set; } = "";
-        public ObservableCollection<Category> CatCategories { get; }
-        private Category? _selectedCategory;
-        public Category? SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                _selectedCategory = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanSave));
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
-        // Dishes-to-add picklist
-        public ObservableCollection<Dish> AvailableDishes { get; }
-        private Dish? _selectedAvailableDish;
-        public Dish? SelectedAvailableDish
-        {
-            get => _selectedAvailableDish;
-            set { _selectedAvailableDish = value; OnPropertyChanged(); }
-        }
-
-        private int _newPortion;
-        public int NewPortion
-        {
-            get => _newPortion;
-            set { _newPortion = value; OnPropertyChanged(); }
-        }
-
-        // Current menu items
-        public ObservableCollection<MenuItemDto> Items { get; }
-
-        // Commands
-        public ICommand AddItemCommand { get; }
-        public ICommand RemoveItemCommand { get; }
-        public DelegateCommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
-
-        public bool CanSave =>
-            !string.IsNullOrWhiteSpace(Name)
-            && SelectedCategory != null
-            && Items.Count >= 2;
-
-        public int? MenuId { get; }  // for edit
-
-        //public MenuViewModel(
-        //    RestaurantDbContext db,
-        //    IConfiguration cfg,
-        //    Menu? existing = null)
-        //{
-        //    _db = db;
-        //    _discountPct = cfg.GetValue<int>("Settings:MenuDiscountPercent");
-        //    CatCategories = new ObservableCollection<Category>(db.Categories.ToList());
-        //    AvailableDishes = new ObservableCollection<Dish>(
-        //        db.Dishes.AsNoTracking().ToList()
-        //    );
-        //    Items = new ObservableCollection<MenuItemDto>();
-        //    Items.CollectionChanged += (_, __) =>
-        //    {
-        //        OnPropertyChanged(nameof(CanSave));
-        //        CommandManager.InvalidateRequerySuggested();
-        //    };
-
-
-        //    if (existing != null)
-        //    {
-        //        _isNew = false;
-        //        MenuId = existing.MenuId;
-        //        Name = existing.Name;
-        //        SelectedCategory = CatCategories.First(c => c.CategoryId == existing.CategoryId);
-
-        //        foreach (var mi in existing.MenuItems)
-        //        {
-        //            Items.Add(new MenuItemDto(
-        //                mi.DishId,
-        //                mi.Dish.Name,
-        //                mi.MenuPortionGrams
-        //            ));
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _isNew = true;
-        //    }
-
-        //    AddItemCommand = new RelayCommand(_ => AddItem(), _ => SelectedAvailableDish != null && NewPortion > 0);
-        //    RemoveItemCommand = new RelayCommand(obj => RemoveItem(obj as MenuItemDto), obj => obj is MenuItemDto);
-        //    SaveCommand = new DelegateCommand(win => Save(win as Window), _ => CanSave);
-        //    Items.CollectionChanged += (_, __) =>
-        //        SaveCommand.RaiseCanExecuteChanged();
-        //    CancelCommand = new RelayCommand(win => { if (win is Window w) w.DialogResult = false; });
-        //}
 
         private void AddItem()
         {

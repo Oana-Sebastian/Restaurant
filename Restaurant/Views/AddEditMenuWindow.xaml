@@ -35,7 +35,7 @@
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   SelectionMode="Single"
-                  SelectedItem="{Binding SelectedMenuItem}">
+                  >
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Dish" Binding="{Binding DishName}" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Portion (g)" Binding="{Binding PortionGrams, UpdateSourceTrigger=PropertyChanged}"/>

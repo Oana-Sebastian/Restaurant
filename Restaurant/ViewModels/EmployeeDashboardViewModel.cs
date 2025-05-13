@@ -236,7 +236,45 @@ namespace Restaurant.ViewModels
                     }
                 }
             });
-            EditMenuCommand = new RelayCommand(o => {/* Open EditMenuDialog bound to SelectedMenu */}, _ => SelectedMenu != null);
+            EditMenuCommand = new RelayCommand(_ =>
+            {
+                if (SelectedMenu == null) return;
+
+                // 1) Resolve the window & VM
+                var dlg = _sp.GetRequiredService<AddEditMenuWindow>();
+                // pass the existing MenuId into the VM so it loads that menu
+                dlg.DataContext = new MenuViewModel(_db, _config,SelectedMenu.Menu);
+
+                // 2) Show dialog
+                if (dlg.ShowDialog() == true)
+                {
+                    // 3a) If you want to reload only the edited item:
+                    //var edited = _db.Menus
+                    //    .Include(m => m.Category)
+                    //    .Include(m => m.MenuItems)
+                    //       .ThenInclude(mi => mi.Dish)
+                    //    .AsNoTracking()
+                    //    .Single(m => m.MenuId == SelectedMenu.MenuId);
+
+                    //var vm = new MenuListItemViewModel(edited, _config);
+                    //var idx = Menus.IndexOf(SelectedMenu);
+                    //Menus[idx] = vm;
+                    //SelectedMenu = vm;
+                    //OnPropertyChanged(nameof(SelectedMenu));
+
+                    // — OR — 3b) Reload the entire list:
+                    Menus.Clear();
+                    foreach (var m in _db.Menus
+                         .Include(x => x.Category)
+                         .Include(x => x.MenuItems).ThenInclude(mi => mi.Dish)
+                         .AsNoTracking()
+                         .ToList())
+                    {
+                        Menus.Add(new MenuListItemViewModel(m, _config));
+                    }
+                }
+
+            }, _ => SelectedMenu != null);
             DeleteMenuCommand = new RelayCommand(_ => DeleteMenu(SelectedMenu), _ => SelectedMenu != null);
 
             AdvanceOrderStatusCommand = new RelayCommand(o => AdvanceOrderStatus((Order)o), _ => SelectedActiveOrder != null);

@@ -65,7 +65,7 @@ namespace Restaurant.Data
 
             // Order-Item (OrderItem): one-to-many from Order, one-to-many from Dish
             modelBuilder.Entity<OrderItem>()
-                .HasKey(oi => new { oi.OrderId, oi.DishId });
+                .HasKey(oi => oi.OrderItemId);
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Order)
@@ -77,7 +77,16 @@ namespace Restaurant.Data
                 .HasOne(oi => oi.Dish)
                 .WithMany(d => d.OrderItems)
                 .HasForeignKey(oi => oi.DishId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Menu)
+                .WithMany(m => m.OrderItems)
+                .HasForeignKey(oi => oi.MenuId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+      
 
             // Dish-Category: many dishes in one category
             modelBuilder.Entity<Dish>()

@@ -42,8 +42,12 @@ namespace Restaurant.ViewModels
             Eta = o.OrderDate.AddMinutes(30);
 
             ItemsDisplay = string.Join(", ",
-                o.OrderItems.Select(i => $"{i.Quantity}×{i.Dish.Name}")
-            );
+            o.OrderItems.Select(i =>
+                i.Menu != null
+                  ? $"{i.Quantity}×{i.Menu.Name} (meniu)"
+                  : $"{i.Quantity}×{i.Dish!.Name}"
+            )
+        );
         }
     }
 }

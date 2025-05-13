@@ -239,7 +239,7 @@ Visibility="{Binding IsAvailable,
                          IsReadOnly="True"
                          Margin="5">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Order ID" Binding="{Binding OrderId}" />
+                        <DataGridTextColumn Header="Order ID" Binding="{Binding Code}" />
                         <DataGridTextColumn Header="User"    Binding="{Binding User.Email}" />
                         <DataGridTextColumn Header="Date"    Binding="{Binding OrderDate}" />
                         <DataGridTextColumn Header="Status"  Binding="{Binding Status}" />

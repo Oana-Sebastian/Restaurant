@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -33,13 +34,16 @@ namespace Restaurant.ViewModels
         public string NewOrderQuantity { get; set; } = "1";
         public ICommand AddToCartCommand { get; }
         public ICommand PlaceOrderCommand { get; }
+        public ICommand RemoveFromCartCommand { get; }
+        public ICommand CancelOrderCommand { get; }
+        public ICommand ChangeStatusCommand { get; }
 
         // in‐memory cart
         //private readonly ObservableCollection<(MenuItem mi, int qty)> _cart
         //    = new ObservableCollection<(MenuItem, int)>();
 
-        private readonly ObservableCollection<(OrderableItem item, int qty)> _cart
-    = new ObservableCollection<(OrderableItem, int)>();
+        //    private readonly ObservableCollection<(OrderableItem item, int qty)> _cart
+        //= new ObservableCollection<(OrderableItem, int)>();
 
         public ObservableCollection<CartItemViewModel> CartItems { get; }
     = new ObservableCollection<CartItemViewModel>();
@@ -65,8 +69,6 @@ namespace Restaurant.ViewModels
                 Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>()
               );
 
-        public ICommand CancelOrderCommand { get; }
-        public ICommand ChangeStatusCommand { get; }
 
         public OrderViewModel(RestaurantDbContext db,
                               IAuthService auth,
@@ -132,7 +134,10 @@ namespace Restaurant.ViewModels
 
             CancelOrderCommand = new RelayCommand(o => Cancel((OrderListItemViewModel)o));
             ChangeStatusCommand = new RelayCommand(o => ChangeStatus((OrderListItemViewModel)o));
-
+            RemoveFromCartCommand = new RelayCommand(
+        ci => RemoveCartItem((CartItemViewModel)ci),
+        ci => ci is CartItemViewModel
+    );
             RefreshDisplayedOrders();
         }
 
@@ -195,6 +200,14 @@ namespace Restaurant.ViewModels
             OnPropertyChanged(nameof(CanAddToCart));
         }
 
+        private void RemoveCartItem(CartItemViewModel item)
+        {
+            if (item == null) return;
+            CartItems.Remove(item);
+            // fire any property-changed so buttons enable/disable update:
+            OnPropertyChanged(nameof(CanPlaceOrder));
+        }
+
         private void PlaceOrder()
         {
             var user = _auth.CurrentUser!;
@@ -252,7 +265,6 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 3) All good—build the Order
             var ord = new Order
             {
                 UserId = user.UserId,
@@ -262,7 +274,7 @@ namespace Restaurant.ViewModels
                 OrderItems = new List<OrderItem>()
             };
 
-            // 4) Populate OrderItems from CartItems
+            // 4) Populate OrderItems *and* deduct stock in one go
             foreach (var ci in CartItems)
             {
                 var oi = ci.Orderable;
@@ -270,46 +282,68 @@ namespace Restaurant.ViewModels
 
                 if (!oi.IsMenu)
                 {
-                    var dish = (Dish)oi.Entity;
+                    // ----- standalone dish -----
+                    var dishEntity = _db.Dishes.Find(((Dish)oi.Entity).DishId)!;
                     ord.OrderItems.Add(new OrderItem
                     {
-                        DishId = dish.DishId,
+                        Dish = dishEntity,
+                        DishId = dishEntity.DishId,
+                        Menu = null,
+                        MenuId = null,
                         Quantity = qty,
-                        PriceAtOrder = dish.Price
+                        PriceAtOrder = dishEntity.Price
                     });
+
+                    // deduct stock
+                    dishEntity.TotalQuantity -=
+                        qty * dishEntity.PortionQuantity;
                 }
                 else
                 {
-                    var menu = (Menu)oi.Entity;
-                    foreach (var mi in menu.MenuItems)
+                    // ----- menu -----
+                    // load & track the menu + its dishes
+                    var menuEntity = _db.Menus
+                                       .Include(m => m.MenuItems)
+                                         .ThenInclude(mi => mi.Dish)
+                                       .Single(m => m.MenuId == oi.Id);
+
+                    ord.OrderItems.Add(new OrderItem
+                    {
+                        Menu = menuEntity,                // navigation
+                        MenuId = menuEntity.MenuId,         // foreign-key
+                        Dish = null,                      // clear any dish
+                        DishId = null,                      // clear any dish FK
+                        Quantity = qty,
+                        PriceAtOrder = oi.Price
+                    });
+
+                    // deduct stock for each dish in the menu
+                    foreach (var mi in menuEntity.MenuItems)
                     {
                         var portions = (int)Math.Ceiling(
-                            qty * mi.MenuPortionGrams / (double)mi.Dish.PortionQuantity);
-                        ord.OrderItems.Add(new OrderItem
-                        {
-                            DishId = mi.DishId,
-                            Quantity = portions,
-                            PriceAtOrder = mi.Dish.Price
-                        });
+                            qty * mi.MenuPortionGrams
+                               / (double)mi.Dish.PortionQuantity);
+
+                        mi.Dish.TotalQuantity -=
+                            portions * mi.Dish.PortionQuantity;
                     }
                 }
             }
 
-            // 5) Compute costs / discounts / delivery fee
-            //    … your existing logic here …
+            // 5) Compute costs & fees
+            ord.FoodCost = ord.OrderItems.Sum(x => x.PriceAtOrder * x.Quantity);
+            ord.DeliveryFee = ord.FoodCost >= _freeDeliveryThreshold ? 0 : _deliveryFee;
+            ord.DiscountAmount = ord.FoodCost >= _orderDiscountThreshold
+                                   ? ord.FoodCost * (_bulkOrderDiscount / 100M)
+                                   : 0;
+            ord.TotalCost = ord.FoodCost + ord.DeliveryFee - ord.DiscountAmount;
+            ord.EstimatedDeliveryTime = TimeSpan.FromMinutes(30);
 
+            // 6) Persist everything
             _db.Orders.Add(ord);
-
-            // 6) Deduct stock
-            foreach (var oi in ord.OrderItems)
-            {
-                var dish = _db.Dishes.Find(oi.DishId)!;
-                dish.TotalQuantity -= oi.Quantity * dish.PortionQuantity;
-            }
-
             _db.SaveChanges();
 
-            // 7) Clear the cart and refresh UI
+            // 7) Clear cart & refresh
             CartItems.Clear();
             RefreshDisplayedOrders();
         }
@@ -322,7 +356,10 @@ namespace Restaurant.ViewModels
             DisplayedOrders.Clear();
             IQueryable<Order> q = _db.Orders
                 .Include(o => o.User)
-                .Include(o => o.OrderItems).ThenInclude(oi => oi.Dish)
+                .Include(o => o.OrderItems) 
+                .ThenInclude(oi => oi.Dish)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Menu)
                 .OrderByDescending(o => o.OrderDate);
 
             // client sees only own orders
@@ -395,7 +432,12 @@ namespace Restaurant.ViewModels
         var discounted = Math.Round(raw * (1 - discountPct / 100M), 2);
 
         Price        = discounted;
-        DisplayText  = $"{m.Name} – {discounted:C}";
+        var portionStrings = m.MenuItems
+                        .Select(mi => $"{mi.MenuPortionGrams}g")
+                        .ToArray();
+        var portionsDisplay = string.Join("/", portionStrings);
+
+        DisplayText = $"{m.Name} ({portionsDisplay}) – {discounted:C}";
         Entity       = m;
     }
 }

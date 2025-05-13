@@ -22,7 +22,8 @@
             <StackPanel Orientation="Horizontal" Margin="5">
                 <ComboBox Width="300"
           ItemsSource="{Binding Source={StaticResource OrderablesCVS}}"
-          SelectedItem="{Binding SelectedOrderItem}">
+          SelectedItem="{Binding SelectedOrderItem}"
+                          VerticalAlignment="Top">
                     <ComboBox.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
@@ -40,15 +41,21 @@
                 </ComboBox>
 
                 <TextBox Width="50"
-                 Margin="5,0"
-                 Text="{Binding NewOrderQuantity, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <Button Content="Adaugă în coș"
+                 Margin="5,0" 
+                 VerticalAlignment="Top"
+                 Text="{Binding NewOrderQuantity, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Orientation="Vertical" Margin="5">
+                <Button Content="Adaugă în coș" Margin="5"
                 Command="{Binding AddToCartCommand}"/>
+                    <Button Content="Plasează comanda" Margin="5"
+                Command="{Binding PlaceOrderCommand}"
+               />
+                </StackPanel>
 
-                <GroupBox Header="Coșul meu" Grid.Row="0" Margin="0,5"
-          Visibility="{Binding CartItems.Count, Converter={StaticResource ZeroToCollapsedConverter}}"
-                          >
+                <GroupBox Header="Coșul meu"  
+          Grid.Row="0" Margin="0,5"
+          Visibility="{Binding CartItems.Count, Converter={StaticResource ZeroToCollapsedConverter}}">
+
                     <DataGrid ItemsSource="{Binding CartItems}"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
@@ -58,16 +65,26 @@
                             <DataGridTextColumn Header="Produs"   Binding="{Binding DisplayText}" />
                             <DataGridTextColumn Header="Cantitate" Binding="{Binding Quantity}" />
                             <DataGridTextColumn Header="Subtotal"  Binding="{Binding Subtotal, StringFormat=C}" />
+
+                            <!-- Remove button column -->
+                            <DataGridTemplateColumn Header="Șterge">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="🗑"
+                    ToolTip="Șterge din coș"
+                    Command="{Binding DataContext.RemoveFromCartCommand,
+                                      RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
 
 
 
-                <Button Content="Plasează comanda"
-                Margin="10,0"
-                Command="{Binding PlaceOrderCommand}"
-               />
+
             </StackPanel>
         </GroupBox>
 

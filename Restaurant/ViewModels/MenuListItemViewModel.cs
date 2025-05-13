@@ -84,6 +84,7 @@ namespace Restaurant.ViewModels
         public int MenuId { get; }
         public string Name { get; }
         public string CategoryName { get; }
+        public Menu Menu { get; set; }
 
         /// <summary>
         /// The per‐menu components: each dish + its menu‐specific gramaj.
@@ -112,7 +113,7 @@ namespace Restaurant.ViewModels
 
         public MenuListItemViewModel(Menu m, IConfiguration cfg)
         {
-
+            Menu = m;
             MenuId = m.MenuId;
             Name = m.Name;
             CategoryName = m.Category.Name;
