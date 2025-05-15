@@ -27,7 +27,7 @@ namespace Restaurant.ViewModels
         private readonly decimal _orderDiscountThreshold;
         private readonly int _bulkOrderCount;
         private readonly TimeSpan _bulkOrderWindow;
-        private readonly decimal _bulkOrderDiscount;
+        private readonly decimal _orderDiscount;
 
         public ObservableCollection<OrderableItem> MenuItemsForOrdering { get; }
         public OrderableItem SelectedOrderItem { get; set; }
@@ -101,11 +101,11 @@ namespace Restaurant.ViewModels
 
             _freeDeliveryThreshold = config.GetValue<decimal>("Settings:FreeDeliveryThreshold");
             _deliveryFee = config.GetValue<decimal>("Settings:DeliveryFee");
-            _orderDiscountThreshold = config.GetValue<decimal>("Settings:FreeDeliveryThreshold");
+            _orderDiscountThreshold = config.GetValue<decimal>("Settings:OrderDiscountThreshold");
             _bulkOrderCount = config.GetValue<int>("Settings:BulkOrderCountThreshold");
             _bulkOrderWindow = TimeSpan.FromHours(
                                          config.GetValue<int>("Settings:BulkOrderTimeWindowHours"));
-            _bulkOrderDiscount = config.GetValue<decimal>("Settings:BulkOrderDiscountPercent");
+            _orderDiscount = config.GetValue<decimal>("Settings:OrderDiscountPercent");
 
             // load menu items for “place order” dropdown
             //MenuItemsForOrdering = new ObservableCollection<MenuItem>(
@@ -216,39 +216,43 @@ namespace Restaurant.ViewModels
             var requirements = new Dictionary<int, int>();
             foreach (var ci in CartItems)
             {
-                var oi = ci.Orderable;   // assuming you expose the OrderableItem in your CartItemViewModel
+                var oi = ci.Orderable;
                 var qty = ci.Quantity;
 
                 if (!oi.IsMenu)
                 {
                     var dish = (Dish)oi.Entity;
+                    // each standalone “portion” is dish.PortionQuantity grams
+                    var neededGrams = qty * dish.PortionQuantity;
                     requirements[dish.DishId] =
-                        requirements.GetValueOrDefault(dish.DishId) + qty;
+                        requirements.GetValueOrDefault(dish.DishId) + neededGrams;
                 }
                 else
                 {
                     var menu = (Menu)oi.Entity;
                     foreach (var mi in menu.MenuItems)
                     {
-                        // calculate how many portions of this dish are needed
-                        var portionCount = (int)Math.Ceiling(
-                           qty * mi.MenuPortionGrams / (double)mi.Dish.PortionQuantity);
+                        // here MenuPortionGrams is *already* the grams you need
+                        var neededGrams = qty * mi.MenuPortionGrams;
                         requirements[mi.DishId] =
-                            requirements.GetValueOrDefault(mi.DishId) + portionCount;
+                            requirements.GetValueOrDefault(mi.DishId) + neededGrams;
                     }
                 }
             }
 
             // 2) Check stock
             var shortfalls = new List<string>();
-            foreach (var (dishId, reqPortions) in requirements)
+            foreach (var (dishId, reqGrams) in requirements)
             {
                 var dish = _db.Dishes.Find(dishId)!;
-                var availablePortions = dish.TotalQuantity / dish.PortionQuantity;
-                if (availablePortions < reqPortions)
+                if (dish.TotalQuantity < reqGrams)
                 {
+                    var availablePortions = dish.TotalQuantity / dish.PortionQuantity;
+                    var neededPortions = (double)reqGrams / dish.PortionQuantity;
                     shortfalls.Add(
-                        $"{dish.Name}: ai cerut {reqPortions} portie(i), în stoc doar {availablePortions}"
+                        $"{dish.Name}: în stoc {availablePortions} porții " +
+                        $"({dish.TotalQuantity} g), ai nevoie de {neededPortions:N1} porții " +
+                        $"({reqGrams} g)"
                     );
                 }
             }
@@ -264,6 +268,15 @@ namespace Restaurant.ViewModels
                 );
                 return;
             }
+
+            var windowStart = DateTime.Now.Subtract(_bulkOrderWindow);
+            var recentCount = _db.Orders
+                .Where(o => o.UserId == user.UserId
+                         && o.OrderDate >= windowStart)
+                .Count();
+
+
+
 
             var ord = new Order
             {
@@ -284,6 +297,8 @@ namespace Restaurant.ViewModels
                 {
                     // ----- standalone dish -----
                     var dishEntity = _db.Dishes.Find(((Dish)oi.Entity).DishId)!;
+                    var gramsToRemove = qty * dishEntity.PortionQuantity;
+                    dishEntity.TotalQuantity -= gramsToRemove;
                     ord.OrderItems.Add(new OrderItem
                     {
                         Dish = dishEntity,
@@ -319,23 +334,26 @@ namespace Restaurant.ViewModels
 
                     // deduct stock for each dish in the menu
                     foreach (var mi in menuEntity.MenuItems)
-                    {
-                        var portions = (int)Math.Ceiling(
-                            qty * mi.MenuPortionGrams
-                               / (double)mi.Dish.PortionQuantity);
-
-                        mi.Dish.TotalQuantity -=
-                            portions * mi.Dish.PortionQuantity;
-                    }
+    {
+        var gramsToRemove = qty * mi.MenuPortionGrams;
+        mi.Dish.TotalQuantity -= gramsToRemove;
+    }
                 }
             }
 
             // 5) Compute costs & fees
             ord.FoodCost = ord.OrderItems.Sum(x => x.PriceAtOrder * x.Quantity);
             ord.DeliveryFee = ord.FoodCost >= _freeDeliveryThreshold ? 0 : _deliveryFee;
-            ord.DiscountAmount = ord.FoodCost >= _orderDiscountThreshold
-                                   ? ord.FoodCost * (_bulkOrderDiscount / 100M)
-                                   : 0;
+            ord.DiscountAmount = 0;
+            if(recentCount >= _bulkOrderCount)
+            {
+                ord.DiscountAmount += ord.FoodCost * _orderDiscount / 100;
+            }
+            if (ord.FoodCost >= _orderDiscountThreshold)
+            {
+                ord.DiscountAmount += ord.FoodCost * _orderDiscount / 100;
+            }
+
             ord.TotalCost = ord.FoodCost + ord.DeliveryFee - ord.DiscountAmount;
             ord.EstimatedDeliveryTime = TimeSpan.FromMinutes(30);
 
@@ -355,6 +373,7 @@ namespace Restaurant.ViewModels
         {
             DisplayedOrders.Clear();
             IQueryable<Order> q = _db.Orders
+                .AsNoTracking()
                 .Include(o => o.User)
                 .Include(o => o.OrderItems) 
                 .ThenInclude(oi => oi.Dish)

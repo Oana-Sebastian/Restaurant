@@ -148,6 +148,8 @@ namespace Restaurant.ViewModels
                    .Include(o => o.User)
                    .Include(o => o.OrderItems)
                       .ThenInclude(oi => oi.Dish)
+                      .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Menu)
                    .OrderByDescending(o => o.OrderDate)
                    .AsNoTracking()
                    .ToList()
@@ -277,7 +279,7 @@ namespace Restaurant.ViewModels
             }, _ => SelectedMenu != null);
             DeleteMenuCommand = new RelayCommand(_ => DeleteMenu(SelectedMenu), _ => SelectedMenu != null);
 
-            AdvanceOrderStatusCommand = new RelayCommand(o => AdvanceOrderStatus((Order)o), _ => SelectedActiveOrder != null);
+            AdvanceOrderStatusCommand = new RelayCommand(_ => AdvanceOrderStatus(SelectedActiveOrder), _ => SelectedActiveOrder != null);
 
             LogoutCommand = new RelayCommand(_ =>
             {
@@ -557,14 +559,28 @@ namespace Restaurant.ViewModels
             _db.SaveChanges();
 
             // refresh collections
-            ActiveOrders.Remove(o);
-            AllOrders.Clear();
-            foreach (var ord in _db.Orders
-                                 .Include(x => x.User)
-                                 .OrderByDescending(x => x.OrderDate))
+            if (existing.Status == OrderStatus.Delivered ||
+    existing.Status == OrderStatus.Cancelled)
+
             {
-                AllOrders.Add(ord);
+                ActiveOrders.Remove(o);
             }
+            RefreshActiveOrders();
+        }
+
+        private void RefreshActiveOrders()
+        {
+            ActiveOrders.Clear();
+            var actives = _db.Orders
+                .Where(o => o.Status != OrderStatus.Delivered
+                         && o.Status != OrderStatus.Cancelled)
+                .OrderBy(o => o.OrderDate)
+                .Include(o => o.User)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Dish)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Menu);
+
+            foreach (var ord in actives)
+                ActiveOrders.Add(ord);
         }
 
         public void RefreshLowStockItems()

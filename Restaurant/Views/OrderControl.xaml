@@ -100,6 +100,8 @@
                 <DataGridTextColumn Header="Cod"           Binding="{Binding Code}" />
                 <DataGridTextColumn Header="Produse"       Binding="{Binding ItemsDisplay}" />
                 <DataGridTextColumn Header="Cost total"    Binding="{Binding TotalCost, StringFormat=C}" />
+                <DataGridTextColumn Header="Cost Transport" Binding="{Binding DeliveryFee,StringFormat=C}"/>
+                <DataGridTextColumn Header="Dicount"        Binding="{Binding DiscountAmount, StringFormat=C}"/>
                 <DataGridTextColumn Header="Stare"         Binding="{Binding Status}" />
                 <DataGridTextColumn Header="ET​A"           Binding="{Binding Eta, StringFormat=t}" />
 

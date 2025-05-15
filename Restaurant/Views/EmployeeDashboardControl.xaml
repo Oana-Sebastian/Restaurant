@@ -239,11 +239,14 @@ Visibility="{Binding IsAvailable,
                          IsReadOnly="True"
                          Margin="5">
                     <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date"     Binding="{Binding OrderDate}" />
                         <DataGridTextColumn Header="Order ID" Binding="{Binding Code}" />
-                        <DataGridTextColumn Header="User"    Binding="{Binding User.Email}" />
-                        <DataGridTextColumn Header="Date"    Binding="{Binding OrderDate}" />
-                        <DataGridTextColumn Header="Status"  Binding="{Binding Status}" />
-                        <DataGridTextColumn Header="Total"   Binding="{Binding TotalCost}" />
+                        <DataGridTextColumn Header="Items"  Binding="{Binding ItemsDisplay}" />
+                        <DataGridTextColumn Header="Food Cost"    Binding="{Binding FoodCost}" />
+                        <DataGridTextColumn Header="Delivey Fee" Binding="{Binding DeliveryFee}"/>
+                        <DataGridTextColumn Header="Total"    Binding="{Binding TotalCost}" />
+                        <DataGridTextColumn Header="User"     Binding="{Binding UserDisplay}" />
+                        <DataGridTextColumn Header="Status"   Binding="{Binding Status}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
@@ -257,9 +260,14 @@ Visibility="{Binding IsAvailable,
                               IsReadOnly="True"
                              Margin="5">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Order ID" Binding="{Binding OrderId}" />
-                            <DataGridTextColumn Header="Date"    Binding="{Binding OrderDate}" />
-                            <DataGridTextColumn Header="Status"  Binding="{Binding Status}" />
+                            <DataGridTextColumn Header="Date"     Binding="{Binding OrderDate}" />
+                            <DataGridTextColumn Header="Order ID" Binding="{Binding Code}" />
+                            <DataGridTextColumn Header="Items"  Binding="{Binding ItemsDisplay}" />
+                            <DataGridTextColumn Header="Food Cost"    Binding="{Binding FoodCost}" />
+                            <DataGridTextColumn Header="Delivey Fee" Binding="{Binding DeliveryFee}"/>
+                            <DataGridTextColumn Header="Total"    Binding="{Binding TotalCost}" />
+                            <DataGridTextColumn Header="User"     Binding="{Binding UserDisplay}" />
+                            <DataGridTextColumn Header="Status"   Binding="{Binding Status}" />
                         </DataGrid.Columns>
                     </DataGrid>
                     <Button Content="Advance Status"

@@ -150,16 +150,27 @@ namespace Restaurant.ViewModels
             else
             {
                 // Clear the Category navigation so EF only sees the FK
-               
-                // Mark the scalar props as modified
-                var entry = _db.Entry(_dish);
-                entry.Property(d => d.Name).IsModified = true;
-                entry.Property(d => d.Price).IsModified = true;
-                entry.Property(d => d.PortionQuantity).IsModified = true;
-                entry.Property(d => d.TotalQuantity).IsModified = true;
-                entry.Property(d => d.CategoryId).IsModified = true;
 
-                _db.SaveChanges();  // EF will update only those columns
+                // Mark the scalar props as modified
+                //var entry = _db.Entry(_dish);
+                //entry.Property(d => d.Name).IsModified = true;
+                //entry.Property(d => d.Price).IsModified = true;
+                //entry.Property(d => d.PortionQuantity).IsModified = true;
+                //entry.Property(d => d.TotalQuantity).IsModified = true;
+                //entry.Property(d => d.CategoryId).IsModified = true;
+
+                //_db.SaveChanges();  // EF will update only those columns
+                var tracked = _db.Dishes.Single(d => d.DishId == _dish.DishId);
+
+                // 2) Apply your edits
+                tracked.Name = _dish.Name;
+                tracked.Price = _dish.Price;
+                tracked.PortionQuantity = _dish.PortionQuantity;
+                tracked.TotalQuantity = _dish.TotalQuantity;
+                tracked.CategoryId = _dish.CategoryId;
+
+                // 3) Save – EF will see the changes and issue an UPDATE
+                _db.SaveChanges();
             }
 
 
