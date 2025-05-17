@@ -5,10 +5,10 @@
     <Grid>
         <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
 
-            <!-- 1. Manage Categories, Dishes, Menus, Allergens -->
+            
             <TabItem Header="Catalogs">
                 <TabControl Margin="5">
-                    <!-- Categories -->
+                   
                     <TabItem Header="Categories">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Categories}"
@@ -29,7 +29,7 @@
                         </StackPanel>
                     </TabItem>
 
-                    <!-- Dishes -->
+                   
                     <TabItem Header="Dishes">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Dishes}"
@@ -39,27 +39,27 @@
               Height="250">
 
                                 <DataGrid.Columns>
-                                    <!-- 1) Denumire -->
+                                  
                                     <DataGridTextColumn Header="Name" 
                             Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <!-- 2) Pret -->
+                                    
                                     <DataGridTextColumn Header="Price" 
                             Binding="{Binding Price, StringFormat=C, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <!-- 3) Cantitate per portie -->
+                                   
                                     <DataGridTextColumn Header="Portion (g)" 
                             Binding="{Binding PortionQuantity, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <!-- 4) Cantitate totala in restaurant -->
+                                    
                                     <DataGridTextColumn Header="In Stock (g)" 
                             Binding="{Binding TotalQuantity, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <!-- 5) Categorie -->
+                                    
                                     <DataGridTextColumn Header="Category" 
                             Binding="{Binding Category.Name, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <!-- 6) Lista alergeni -->
+                                    
                                     <DataGridTemplateColumn Header="Allergens">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -69,7 +69,7 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- 7) Galerie de imagini -->
+                                    
                                     <DataGridTemplateColumn Header="Images">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -104,7 +104,6 @@ Visibility="{Binding IsAvailable,
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <!-- CRUD Buttons -->
                             <StackPanel Orientation="Horizontal" Margin="0,5">
                                 <Button Content="Add"    Command="{Binding AddDishCommand}" />
                                 <Button Content="Edit"   Command="{Binding EditDishCommand}"
@@ -116,7 +115,7 @@ Visibility="{Binding IsAvailable,
                     </TabItem>
 
 
-                    <!-- Menus -->
+                    
                     <TabItem Header="Menus">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Menus}"
@@ -125,8 +124,7 @@ Visibility="{Binding IsAvailable,
                                       IsReadOnly="True"
                                       Height="200">
 
-                                    <!-- 1) Menu name -->
-
+                                   
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Name"
                             Binding="{Binding Name}" />
@@ -178,11 +176,11 @@ Visibility="{Binding IsAvailable,
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- 3) Price after discount -->
+                                    
                                     <DataGridTextColumn Header="Price"
                             Binding="{Binding Price, StringFormat=C}" />
 
-                                    <!-- 4) Availability -->
+                                    
                                     <DataGridTemplateColumn Header="Status">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -197,7 +195,7 @@ Visibility="{Binding IsAvailable,
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <!-- CRUD Buttons -->
+                            
                             <StackPanel Orientation="Horizontal" Margin="0,5">
                                 <Button Content="Add"    Command="{Binding AddMenuCommand}" />
                                 <Button Content="Edit"   Command="{Binding EditMenuCommand}"
@@ -208,8 +206,6 @@ Visibility="{Binding IsAvailable,
                         </StackPanel>
                     </TabItem>
 
-
-                    <!-- Allergens -->
                     <TabItem Header="Allergens">
                         <StackPanel>
                             <DataGrid ItemsSource="{Binding Allergens}"
@@ -232,7 +228,7 @@ Visibility="{Binding IsAvailable,
                 </TabControl>
             </TabItem>
 
-            <!-- 2. All Orders (desc by date/time) -->
+            
             <TabItem Header="All Orders">
                 <DataGrid ItemsSource="{Binding AllOrders}"
                          AutoGenerateColumns="False"
@@ -251,7 +247,7 @@ Visibility="{Binding IsAvailable,
                 </DataGrid>
             </TabItem>
 
-            <!-- 3. Active Orders -->
+           
             <TabItem Header="Active Orders">
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <DataGrid ItemsSource="{Binding ActiveOrders}"
@@ -277,7 +273,7 @@ Visibility="{Binding IsAvailable,
                 </StackPanel>
             </TabItem>
 
-            <!-- 4. Low Stock Alerts -->
+            
             <TabItem Header="Low Stock">
                 <DataGrid ItemsSource="{Binding LowStockItems}"
                          AutoGenerateColumns="False"

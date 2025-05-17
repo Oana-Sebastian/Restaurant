@@ -5,7 +5,7 @@ public class CartItemViewModel
     public string DisplayText { get; }
     public OrderableItem Orderable { get; }
     public int Quantity { get; private set; }
-    public decimal Subtotal { get; private set; }  // price × qty
+    public decimal Subtotal { get; private set; } 
 
     private readonly OrderableItem _oi;
 
@@ -20,6 +20,6 @@ public class CartItemViewModel
     public void Increase(int delta)
     {
         Quantity += delta;
-        Subtotal = Quantity * Orderable.Price;  // ← now uses the new Price property
+        Subtotal = Quantity * Orderable.Price; 
     }
 }

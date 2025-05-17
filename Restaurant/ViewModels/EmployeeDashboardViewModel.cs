@@ -13,7 +13,6 @@ using Restaurant.Helpers;
 using Restaurant.Models;
 using Restaurant.Service;
 using Restaurant.Views;
-//using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Restaurant.ViewModels
 {
@@ -21,7 +20,7 @@ namespace Restaurant.ViewModels
     {
         private readonly RestaurantDbContext _db;
         private readonly IAuthService _auth;
-        private readonly INavigationService _nav;
+        public readonly INavigationService _nav;
         private readonly IServiceProvider _sp;
         private readonly IConfiguration _config;
         private readonly int _lowStockThreshold;
@@ -35,7 +34,7 @@ namespace Restaurant.ViewModels
                 _selectedTabIndex = value;
                 OnPropertyChanged();
 
-                // Suppose "Low Stock" is tab #3 (zero-based: 0=Catalogs, 1=All Orders, 2=Active Orders, 3=Low Stock)
+                
                 if (_selectedTabIndex == 3)
                     RefreshLowStockItems();
             }
@@ -43,7 +42,6 @@ namespace Restaurant.ViewModels
 
         public ObservableCollection<Category> Categories { get; }
         public ObservableCollection<Dish> Dishes { get; }
-        //public ObservableCollection<Menu> Menus { get; }
         public ObservableCollection<MenuListItemViewModel> Menus { get; }
         public ObservableCollection<Allergen> Allergens { get; }
 
@@ -51,7 +49,6 @@ namespace Restaurant.ViewModels
         public ObservableCollection<Order> ActiveOrders { get; }
         public ObservableCollection<Dish> LowStockItems { get; }
 
-        // Selected items
         public Category? SelectedCategory
         {
             get;
@@ -62,11 +59,9 @@ namespace Restaurant.ViewModels
         public Allergen? SelectedAllergen { get; set; }
         public Order? SelectedActiveOrder { get; set; }
 
-        // For new entries
         public string NewCategoryName { get; set; } = "";
         public string NewAllergenName { get; set; } = "";
 
-        // Commands
         public ICommand AddCategoryCommand { get; }
         public ICommand DeleteCategoryCommand { get; }
         public ICommand AddDishCommand { get; }
@@ -94,11 +89,9 @@ namespace Restaurant.ViewModels
             _config = config;
             _lowStockThreshold = config.GetValue<int>("Settings:LowStockThreshold");
 
-            // LOAD ENTITIES WITH NAVIGATIONS
 
             Categories = new ObservableCollection<Category>(
                 _db.Categories
-                   // no navs needed here for delete-only UI
                    .AsNoTracking()
                    .ToList()
             );
@@ -113,14 +106,7 @@ namespace Restaurant.ViewModels
                    .ToList()
             );
 
-            //            Menus = new ObservableCollection<MenuListItemViewModel>(
-            //    _db.Menus
-            //       .Include(m => m.Category)
-            //       .Include(m => m.MenuItems).ThenInclude(mi => mi.Dish)
-            //       .AsNoTracking()
-            //       .ToList()
-            //       .Select(m => new MenuListItemViewModel(m, _config))
-            //);
+           
             Menus = new ObservableCollection<MenuListItemViewModel>(
                 _db.Menus
                     .Include(m => m.Category)
@@ -172,7 +158,6 @@ namespace Restaurant.ViewModels
                       .ToList()
             );
 
-            // COMMANDS
 
             AddCategoryCommand = new RelayCommand(_ => AddCategory(), _ => !string.IsNullOrWhiteSpace(NewCategoryName));
             DeleteCategoryCommand = new RelayCommand(_ => DeleteCategory(SelectedCategory), _ => SelectedCategory != null && SelectedCategory.Name != string.Empty);
@@ -183,14 +168,12 @@ namespace Restaurant.ViewModels
             AddDishCommand = new RelayCommand(_ =>
             {
                 var dialog = _sp.GetRequiredService<AddEditDishWindow>();
-                var vm = new DishViewModel(_db, _sp); // new dish
+                var vm = new DishViewModel(_db, _sp); 
                 dialog.DataContext = vm;
                 if (dialog.ShowDialog() == true)
                 {
-                    // Refresh the Dishes list:
                     Dishes.Add(_db.Dishes
                                   .Include(d => d.Category)
-                                  // ... same includes as before ...
                                   .First(d => d.DishId == vm.DishId));
                 }
             });
@@ -203,11 +186,9 @@ namespace Restaurant.ViewModels
                 dialog.DataContext = vm;
                 if (dialog.ShowDialog() == true)
                 {
-                    // Re-load SelectedDish from DB or just notify:
                     var idx = Dishes.IndexOf(SelectedDish);
                     Dishes[idx] = _db.Dishes
                                        .Include(d => d.Category)
-                                       // ... includes ...
                                        .First(d => d.DishId == SelectedDish.DishId);
 
                 }
@@ -222,7 +203,6 @@ namespace Restaurant.ViewModels
                 dlg.DataContext = new MenuViewModel(_db, _config);
                 if (dlg.ShowDialog() == true)
                 {
-                    // reload menus list, or add the new one:
                     Menus.Clear();
                     
 
@@ -242,29 +222,12 @@ namespace Restaurant.ViewModels
             {
                 if (SelectedMenu == null) return;
 
-                // 1) Resolve the window & VM
                 var dlg = _sp.GetRequiredService<AddEditMenuWindow>();
-                // pass the existing MenuId into the VM so it loads that menu
                 dlg.DataContext = new MenuViewModel(_db, _config,SelectedMenu.Menu);
 
-                // 2) Show dialog
                 if (dlg.ShowDialog() == true)
                 {
-                    // 3a) If you want to reload only the edited item:
-                    //var edited = _db.Menus
-                    //    .Include(m => m.Category)
-                    //    .Include(m => m.MenuItems)
-                    //       .ThenInclude(mi => mi.Dish)
-                    //    .AsNoTracking()
-                    //    .Single(m => m.MenuId == SelectedMenu.MenuId);
-
-                    //var vm = new MenuListItemViewModel(edited, _config);
-                    //var idx = Menus.IndexOf(SelectedMenu);
-                    //Menus[idx] = vm;
-                    //SelectedMenu = vm;
-                    //OnPropertyChanged(nameof(SelectedMenu));
-
-                    // — OR — 3b) Reload the entire list:
+                    
                     Menus.Clear();
                     foreach (var m in _db.Menus
                          .Include(x => x.Category)
@@ -283,16 +246,13 @@ namespace Restaurant.ViewModels
 
             LogoutCommand = new RelayCommand(_ =>
             {
-                // 1) Log out
                 _auth.Logout();
 
-                // 2) Close this dashboard window
                 var dash = Application.Current.Windows
                              .OfType<EmployeeDashboardWindow>()
                              .FirstOrDefault();
                 dash?.Close();
 
-                // 3) Show main window and navigate back to login
                 var main = Application.Current.Windows
                               .OfType<MainWindow>()
                               .FirstOrDefault();
@@ -305,8 +265,6 @@ namespace Restaurant.ViewModels
         }
 
 
-        // Category logic
-        // Categories
         private void AddCategory()
         {
             var name = NewCategoryName.Trim();
@@ -493,7 +451,7 @@ namespace Restaurant.ViewModels
    );
             _db.DishImages.RemoveRange(existing.Images);
 
-            // Now delete the dish
+            
             _db.Dishes.Remove(existing);
             _db.SaveChanges();
 
@@ -509,7 +467,6 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // Find the underlying entity
             var menuId = vm.MenuId;
             var existing = _db.Menus.Find(vm.MenuId);
             if (existing == null)
@@ -520,13 +477,13 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // Delete from DB
+            
             _db.MenuItems
               .RemoveRange(_db.MenuItems.Where(mi => mi.MenuId == menuId));
             _db.Menus.Remove(existing);
             _db.SaveChanges();
 
-            // Remove from UI collection
+          
             Menus.Remove(vm);
         }
 
@@ -548,7 +505,7 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // advance enum
+            
             existing.Status = existing.Status switch
             {
                 OrderStatus.Registered => OrderStatus.Preparing,
@@ -558,7 +515,7 @@ namespace Restaurant.ViewModels
             };
             _db.SaveChanges();
 
-            // refresh collections
+          
             if (existing.Status == OrderStatus.Delivered ||
     existing.Status == OrderStatus.Cancelled)
 
@@ -588,7 +545,7 @@ namespace Restaurant.ViewModels
             LowStockItems.Clear();
             foreach (var d in Dishes)
             {
-                // number of full portions remaining:
+                
                 var portionsLeft = d.PortionQuantity > 0
                     ? d.TotalQuantity / d.PortionQuantity
                     : 0;

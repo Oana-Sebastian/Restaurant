@@ -4,7 +4,7 @@
         xmlns:views="clr-namespace:Restaurant.Views"
         Title="Employee Dashboard" Height="800" Width="1200" WindowStartupLocation="CenterScreen">
     <Grid>
-        <!-- You can re-use your EmployeeDashboardControl here -->
+       
         <views:EmployeeDashboardControl />
         <Button Content="Logout"
         Command="{Binding LogoutCommand}"

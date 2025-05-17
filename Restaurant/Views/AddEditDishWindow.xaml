@@ -11,7 +11,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Form fields -->
+       
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
             <TextBlock Text="Name:"/>
             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
@@ -31,14 +31,14 @@
                 SelectedItem="{Binding SelectedCategory}"/>
         </StackPanel>
 
-        <!-- Allergens & Images -->
+       
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Allergens -->
+            
             <GroupBox Header="Allergens" Grid.Column="0" Margin="0,0,5,0">
                 <ListBox x:Name="AllergensListBox"
            ItemsSource="{Binding AvailableAllergens}"
@@ -47,7 +47,7 @@
            SelectionChanged="AllergensListBox_SelectionChanged" />
             </GroupBox>
 
-            <!-- Images -->
+            
             <GroupBox Header="Image URLs" Grid.Row="1" Grid.Column="1" Margin="5,5,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -81,7 +81,6 @@
             </GroupBox>
         </Grid>
 
-        <!-- Save / Cancel -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button Content="Save"   Width="75" Margin="0,0,5,0"
               IsDefault="True"

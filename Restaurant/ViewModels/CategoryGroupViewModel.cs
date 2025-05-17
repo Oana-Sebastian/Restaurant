@@ -19,13 +19,13 @@ namespace Restaurant.ViewModels
         {
             CategoryName = cat.Name;
 
-            // Dishes
+            
             Dishes = new ObservableCollection<DishItemViewModel>(
                 cat.Dishes.Select(d => new DishItemViewModel(d, config))
             );
 
 
-            // Menus
+            
             Menus = new ObservableCollection<MenuListItemViewModel>(
                 cat.Menus.Select(m => new MenuListItemViewModel(m, config))
             );

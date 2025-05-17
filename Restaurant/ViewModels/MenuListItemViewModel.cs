@@ -86,29 +86,17 @@ namespace Restaurant.ViewModels
         public string CategoryName { get; }
         public Menu Menu { get; set; }
 
-        /// <summary>
-        /// The per‐menu components: each dish + its menu‐specific gramaj.
-        /// </summary>
+       
         public IReadOnlyList<ComponentDto> Components { get; }
 
-        /// <summary>
-        /// Computed price after discount.
-        /// </summary>
+      
         public decimal Price { get; }
 
-        /// <summary>
-        /// Text shown when not available.
-        /// </summary>
+        
         public string AvailabilityText => IsAvailable ? "" : "Indisponibil";
-
-        /// <summary>
-        /// False means available, true means “show warning”.
-        /// </summary>
         public bool IsAvailable { get; }
 
-        /// <summary>
-        /// All allergens across all component dishes, comma-separated.
-        /// </summary>
+        
         public string MenuAllergensDisplay { get; }
 
         public MenuListItemViewModel(Menu m, IConfiguration cfg)
@@ -118,14 +106,14 @@ namespace Restaurant.ViewModels
             Name = m.Name;
             CategoryName = m.Category.Name;
 
-            // Build components
+           
             Components = m.MenuItems
                           .Select(mi => new ComponentDto(
                               mi.Dish.Name,
                               mi.MenuPortionGrams))
                           .ToList();
 
-            // Price calculation
+            
             var discountPct = cfg.GetValue<decimal>("Settings:MenuDiscountPercent") / 100M;
             var raw = m.MenuItems.Sum(mi =>
                 mi.Dish.Price
@@ -133,11 +121,11 @@ namespace Restaurant.ViewModels
                 / (decimal)mi.Dish.PortionQuantity);
             Price = Math.Round(raw * (1 - discountPct), 2);
 
-            // Availability: all portions must be in stock
+            
             IsAvailable = m.MenuItems.All(mi =>
                 mi.Dish.TotalQuantity >= mi.MenuPortionGrams);
 
-            // Allergens: distinct across all dishes
+
             var allergens = m.MenuItems
                      .Where(mi => mi.Dish?.DishAllergens != null)
                      .SelectMany(mi => mi.Dish.DishAllergens)

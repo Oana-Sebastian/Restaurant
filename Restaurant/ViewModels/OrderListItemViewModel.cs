@@ -19,7 +19,7 @@ namespace Restaurant.ViewModels
         public DateTime Eta { get; }
         public OrderStatus Status { get; }
 
-        // Employee only
+        
         public OrderStatus? NextStatus { get; set; }
 
         public bool CanCancel => Status == OrderStatus.Registered;
@@ -38,7 +38,6 @@ namespace Restaurant.ViewModels
             TotalCost = o.FoodCost + o.DeliveryFee - o.DiscountAmount;
             Status = o.Status;
 
-            // Estimate: +30 minutes
             Eta = o.OrderDate.AddMinutes(30);
 
             ItemsDisplay = string.Join(", ",

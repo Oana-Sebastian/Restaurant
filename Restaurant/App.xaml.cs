@@ -13,35 +13,28 @@ namespace Restaurant
 {
     public partial class App : Application
     {
-        // Expose the DI container
+        
         public IServiceProvider ServiceProvider { get; }
 
         public App()
         {
-            // 1. Build configuration
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            // 2. Register everything
             var services = new ServiceCollection()
-                // Configuration & DbContext
                 .AddSingleton<IConfiguration>(config)
                 .AddDbContext<RestaurantDbContext>(opts =>
                     opts.UseSqlServer(config.GetConnectionString("RestaurantDb")))
 
-                // MainWindow as singleton + navigation
 
                 .AddScoped<IAuthService, AuthService>()
                 .AddSingleton<MainWindowViewModel>()
                 .AddSingleton<INavigationService>(sp =>
                     sp.GetRequiredService<MainWindowViewModel>())
-                // ViewModels
                 .AddTransient<LoginViewModel>()
                 .AddTransient<RegisterViewModel>()
-               //.AddTransient<SearchViewModel>()
-               //.AddTransient<OrderViewModel>()
                .AddTransient<EmployeeDashboardViewModel>(sp =>
     new EmployeeDashboardViewModel(
         sp.GetRequiredService<RestaurantDbContext>(),
@@ -51,13 +44,10 @@ namespace Restaurant
         sp.GetRequiredService<IServiceProvider>()
     )
 )
-               //.AddTransient<MenuListItemViewModel>()
 
 
                 
-               // … other VMs …
-
-                // UserControls
+            
                 .AddTransient<LoginControl>()
                 .AddTransient<RegisterControl>()
                 .AddTransient<EmployeeDashboardControl>()
@@ -73,8 +63,7 @@ namespace Restaurant
                 .AddTransient<MenuControl>()
                 .AddTransient<OrderViewModel>()
                 .AddTransient<OrderControl>()
-                // App services (e.g. authentication, order service, etc.)
-                // …
+               
                 .AddScoped<LoginViewModel>()
                 .AddScoped<RegisterViewModel>()
                 .AddScoped<EmployeeDashboardViewModel>()
@@ -104,7 +93,6 @@ namespace Restaurant
                         System.Diagnostics.Debug.WriteLine("❌ EF Core could not connect to the database.");
                     }
 
-                    // Optional: create the DB if it doesn't exist
                     //dbContext.Database.EnsureDeleted();
                     dbContext.Database.EnsureCreated();
                 }

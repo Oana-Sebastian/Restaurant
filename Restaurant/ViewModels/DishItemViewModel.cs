@@ -21,7 +21,7 @@ namespace Restaurant.ViewModels
         public DishItemViewModel(Dish d, IConfiguration config)
         {
             Name = d.Name;
-            PortionDisplay = $"{d.PortionQuantity}g";            // your property
+            PortionDisplay = $"{d.PortionQuantity}g";         
             Price = d.Price;
             AllergensDisplay = d.DishAllergens != null
             ? string.Join(", ",
@@ -30,7 +30,7 @@ namespace Restaurant.ViewModels
                  .Where(n => !string.IsNullOrEmpty(n))
               )
             : string.Empty;
-            ImageUrls = d.Images.Select(i => i.Url).ToArray();  // your nav
+            ImageUrls = d.Images.Select(i => i.Url).ToArray();  
             IsAvailable = d.TotalQuantity >= d.PortionQuantity;
         }
     }

@@ -20,7 +20,7 @@ namespace Restaurant.ViewModels
         private readonly Dish _dish;
         private readonly bool _isNew;
         public int DishId => _dish.DishId;
-        // Form fields
+        
         public string Name
         {
             get => _dish.Name;
@@ -45,7 +45,7 @@ namespace Restaurant.ViewModels
             set { _dish.TotalQuantity = value; OnPropertyChanged(); }
         }
 
-        // Category selection
+       
         public ObservableCollection<Category> Categories { get; }
         private Category? _selectedCategory;
         public Category? SelectedCategory
@@ -60,14 +60,14 @@ namespace Restaurant.ViewModels
             }
         }
 
-        // Allergens multi‐select
+      
         public ObservableCollection<Allergen> AvailableAllergens { get; }
         public ObservableCollection<Allergen> SelectedAllergens { get; }
 
-        // Images
+        
         public ObservableCollection<string> ImageUrls { get; }
 
-        // Commands
+       
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand DeleteImageUrlCommand { get; }
@@ -88,17 +88,11 @@ namespace Restaurant.ViewModels
             _isNew = dish == null;
             _dish = dish ?? new Dish();
 
-            // Load categories & allergens for the pick‐lists
+            
             Categories = new ObservableCollection<Category>(_db.Categories.ToList());
             AvailableAllergens = new ObservableCollection<Allergen>(_db.Allergens.ToList());
 
-            // Pre‐select existing allergens when editing
-            //SelectedAllergens = new ObservableCollection<Allergen>(
-            //    _dish.DishAllergens?
-            //         .Select(da => da.Allergen)
-            //         .ToList()
-            //   ?? Array.Empty<Allergen>()
-            //);
+           
 
 
             var allergenSeq = _dish.DishAllergens?.Select(da => da.Allergen)
@@ -108,11 +102,7 @@ namespace Restaurant.ViewModels
                 allergenSeq.ToList()
             );
 
-            // Images URLs
-            //ImageUrls = new ObservableCollection<string>(
-            //    _dish.Images?.Select(i => i.Url).ToList()
-            //    ?? Array.Empty<string>()
-            //);
+           
 
             var urlSeq = _dish.Images?.Select(i => i.Url)
              ?? Enumerable.Empty<string>();
@@ -121,11 +111,11 @@ namespace Restaurant.ViewModels
                 urlSeq.ToList()
             );
 
-            // If editing, pick the category
+            
             if (!_isNew)
                 SelectedCategory = Categories.FirstOrDefault(c => c.CategoryId == _dish.CategoryId);
 
-            // Commands
+            
             SaveCommand = new RelayCommand(_ => Save(), _ => CanSave);
             CancelCommand = new RelayCommand(win =>
             {
@@ -141,58 +131,48 @@ namespace Restaurant.ViewModels
 
         private void Save()
         {
-            // 1) Save the Dish (and get its new DishId)
+            
             if (_isNew)
             {
                 _db.Dishes.Add(_dish);
-                _db.SaveChanges();      // get a DishId
+                _db.SaveChanges();      
             }
             else
             {
-                // Clear the Category navigation so EF only sees the FK
-
-                // Mark the scalar props as modified
-                //var entry = _db.Entry(_dish);
-                //entry.Property(d => d.Name).IsModified = true;
-                //entry.Property(d => d.Price).IsModified = true;
-                //entry.Property(d => d.PortionQuantity).IsModified = true;
-                //entry.Property(d => d.TotalQuantity).IsModified = true;
-                //entry.Property(d => d.CategoryId).IsModified = true;
-
-                //_db.SaveChanges();  // EF will update only those columns
+                
                 var tracked = _db.Dishes.Single(d => d.DishId == _dish.DishId);
 
-                // 2) Apply your edits
+                
                 tracked.Name = _dish.Name;
                 tracked.Price = _dish.Price;
                 tracked.PortionQuantity = _dish.PortionQuantity;
                 tracked.TotalQuantity = _dish.TotalQuantity;
                 tracked.CategoryId = _dish.CategoryId;
 
-                // 3) Save – EF will see the changes and issue an UPDATE
+                
                 _db.SaveChanges();
             }
 
 
-            // Capture the new key
+           
             var dishId = _dish.DishId;
 
-            // 2) In a brand-new scoped context, delete & re-add join rows
+            
             using (var scope = _sp.CreateScope())
             {
                 var ctx = scope.ServiceProvider.GetRequiredService<RestaurantDbContext>();
 
-                // Remove old allergen links
+                
                 ctx.DishAllergens
                    .RemoveRange(ctx.DishAllergens.Where(da => da.DishId == dishId));
 
-                // Remove old images
+                
                 ctx.DishImages
                    .RemoveRange(ctx.DishImages.Where(di => di.DishId == dishId));
 
                 ctx.SaveChanges();
 
-                // Add new allergen links
+                
                 foreach (var alg in SelectedAllergens.Distinct())
                 {
                     ctx.DishAllergens.Add(new DishAllergen
@@ -202,7 +182,7 @@ namespace Restaurant.ViewModels
                     });
                 }
 
-                // Add new images
+              
                 foreach (var url in ImageUrls.Distinct())
                 {
                     ctx.DishImages.Add(new DishImage
@@ -215,7 +195,7 @@ namespace Restaurant.ViewModels
                 ctx.SaveChanges();
             }
 
-            // 3) Close the dialog
+           
             var win = Application.Current.Windows
                          .OfType<Window>()
                          .FirstOrDefault(w => w.DataContext == this);

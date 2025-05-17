@@ -31,7 +31,6 @@ namespace Restaurant.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Dish-Allergen: many-to-many via DishAllergen
             modelBuilder.Entity<DishAllergen>()
                 .HasKey(da => new { da.DishId, da.AllergenId });
 
@@ -47,7 +46,6 @@ namespace Restaurant.Data
                 .HasForeignKey(da => da.AllergenId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Menu-Item (MenuItem): many-to-many via MenuItem
             modelBuilder.Entity<MenuItem>()
                 .HasKey(mi => new { mi.MenuId, mi.DishId });
 
@@ -63,7 +61,6 @@ namespace Restaurant.Data
                 .HasForeignKey(mi => mi.DishId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Order-Item (OrderItem): one-to-many from Order, one-to-many from Dish
             modelBuilder.Entity<OrderItem>()
                 .HasKey(oi => oi.OrderItemId);
 
@@ -88,21 +85,18 @@ namespace Restaurant.Data
                 .OnDelete(DeleteBehavior.Restrict);
       
 
-            // Dish-Category: many dishes in one category
             modelBuilder.Entity<Dish>()
                 .HasOne(d => d.Category)
                 .WithMany(c => c.Dishes)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Order-User: one user places many orders
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.User)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Optional: configure default schema/table/column naming conventions here if needed
             modelBuilder.Entity<DishImage>()
     .HasKey(di => di.DishImageId);
 

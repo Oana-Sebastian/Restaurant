@@ -87,9 +87,7 @@ namespace Restaurant.ViewModels
 
         private void ExecuteRegister()
         {
-            // 1) Basic empty checks already guaranteed by CanRegister
-
-            // 2) Email format
+           
             var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
             if (!Regex.IsMatch(Email.Trim(), emailPattern))
             {
@@ -98,7 +96,7 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 3) Prevent duplicate emails
+            
             if (_db.Users.Any(u => u.Email == Email.Trim()))
             {
                 MessageBox.Show("An account with that email already exists.", "Validation Error",
@@ -106,7 +104,7 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 4) Phone number format: optional +, then 10–15 digits
+           
             var phonePattern = @"^\+?\d{10,15}$";
             if (!Regex.IsMatch(PhoneNumber.Trim(), phonePattern))
             {
@@ -115,7 +113,7 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 5) Password strength: min 8 chars, at least one lowercase, one uppercase, one digit, one special
+           
             var pwdPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$";
             if (!Regex.IsMatch(Password, pwdPattern))
             {
@@ -129,7 +127,7 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 6) Everything’s valid—determine role and create user
+           
             var role = Email.Trim().EndsWith("@restaurant.com", StringComparison.OrdinalIgnoreCase)
                        ? UserRole.Employee
                        : UserRole.Client;
@@ -159,7 +157,7 @@ namespace Restaurant.ViewModels
                     MessageBoxImage.Information
                 );
 
-                // Clear form
+                
                 FirstName = "";
                 LastName = "";
                 Email = "";
@@ -168,7 +166,7 @@ namespace Restaurant.ViewModels
                 Password = "";
                 ConfirmedPassword = "";
 
-                // Navigate back to login
+               
                 _nav.NavigateTo(nameof(LoginViewModel));
             }
             catch (Exception ex)

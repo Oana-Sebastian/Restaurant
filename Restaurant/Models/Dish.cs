@@ -23,15 +23,13 @@ namespace Restaurant.Models
         public Category? Category { get; set; }
 
        
-        //public ICollection<DishAllergen>? DishAllergens { get; set; }
+       
         public ICollection<DishAllergen> DishAllergens { get; set; } = new List<DishAllergen>();
 
         [NotMapped]
         public IEnumerable<Allergen> Allergens
             => DishAllergens?.Select(da => da.Allergen)
                ?? Enumerable.Empty<Allergen>();
-        //public ICollection<Allergen> Allergens { get; set; } = new List<Allergen>();
-
         public ICollection<DishImage>? Images { get; set; }
 
         public ICollection<MenuItem>? MenuItems { get; set; }

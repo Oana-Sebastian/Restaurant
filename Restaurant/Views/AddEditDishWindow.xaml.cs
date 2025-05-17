@@ -28,10 +28,10 @@ namespace Restaurant.Views
         {
             if (DataContext is DishViewModel vm && sender is ListBox lb)
             {
-                // Clear current selections
+                
                 vm.SelectedAllergens.Clear();
 
-                // Add every selected item (cast to Allergen)
+                
                 foreach (var item in lb.SelectedItems.Cast<Restaurant.Models.Allergen>())
                 {
                     vm.SelectedAllergens.Add(item);

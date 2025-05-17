@@ -18,7 +18,7 @@ namespace Restaurant.Helpers
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // We’ll handle add/remove in code-behind instead
+           
             return Binding.DoNothing;
         }
     }

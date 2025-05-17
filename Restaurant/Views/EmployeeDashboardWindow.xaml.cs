@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,30 @@ namespace Restaurant.Views
         {
             InitializeComponent();
             DataContext = vm;
+
+            this.Closed+= EmployeeDashboardWindow_Closed;
+        
+        }
+        private void EmployeeDashboardWindow_Closed(object? sender, EventArgs e)
+        {
+            if (DataContext is EmployeeDashboardViewModel vm
+             && vm.LogoutCommand.CanExecute(null))
+            {
+                // 1) Log out
+                vm.LogoutCommand.Execute(null);
+
+                // 2) Show main window & navigate back to login
+                var main = Application.Current.Windows
+                              .OfType<MainWindow>()
+                              .FirstOrDefault();
+                if (main != null)
+                {
+                    main.Show();
+                    vm._nav.NavigateTo(nameof(LoginViewModel));
+                }
+            }
         }
 
     }
+
 }

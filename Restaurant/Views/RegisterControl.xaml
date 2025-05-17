@@ -20,32 +20,30 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Last Name -->
         <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="Last Name:"/>
         <TextBox   Grid.Row="0" Grid.Column="1" Margin="5"
                Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- First Name -->
+       
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="First Name:"/>
         <TextBox   Grid.Row="1" Grid.Column="1" Margin="5"
                Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Email Address -->
+        
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="Email Address:"/>
         <TextBox   Grid.Row="2" Grid.Column="1" Margin="5"
                Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Telephone Number -->
+
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="Telephone:"/>
         <TextBox   Grid.Row="3" Grid.Column="1" Margin="5"
                Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Delivery Address -->
         <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="Delivery Address:"/>
         <TextBox   Grid.Row="4" Grid.Column="1" Margin="5"
                Text="{Binding DeliveryAddress, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Password -->
+        
         <TextBlock Grid.Row="5" Grid.Column="0" Margin="0,5" VerticalAlignment="Center" Text="Password:"/>
         <TextBox Grid.Row="5" Grid.Column="1" Margin="5"
          Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"
@@ -62,7 +60,7 @@
         <!--<PasswordBox
     Grid.Row="6" Grid.Column="1" Margin="5"
     helpers:PasswordHelper.BoundPassword="{Binding ConfirmedPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
-        <!-- Register Button -->
+
         <Button Grid.Row="7" Grid.ColumnSpan="2" Margin="0,15,0,0"
             Content="Register"
             HorizontalAlignment="Center"

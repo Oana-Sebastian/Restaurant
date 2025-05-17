@@ -28,16 +28,15 @@ namespace Restaurant.Helpers
 
             if (d is PasswordBox box)
             {
-                // Unhook previous
+               
                 box.PasswordChanged -= HandlePasswordChanged;
 
-                // Set the password (if different)
+               
                 if (box.Password != (string)e.NewValue)
                 {
                     box.Password = (string)e.NewValue;
                 }
 
-                // Re-hook
                 box.PasswordChanged += HandlePasswordChanged;
             }
         }

@@ -43,8 +43,7 @@ namespace Restaurant.ViewModels
                                                        _ => _auth.CurrentUser == null);
             NavigateRegisterCommand = new RelayCommand(_ => NavigateTo(nameof(RegisterViewModel)),
                                                        _ => _auth.CurrentUser == null);
-            //NavigateSearchCommand = new RelayCommand(_ => NavigateTo(nameof(SearchViewModel)),
-            //                                           _ => true);
+          
             NavigateMenuCommand = new RelayCommand(_ => NavigateTo(nameof(MenuViewModel)),
                                                        _ => true);
             NavigateOrderCommand = new RelayCommand(_ => NavigateTo(nameof(OrderViewModel)),
@@ -90,16 +89,14 @@ namespace Restaurant.ViewModels
                     view = _sp.GetRequiredService<OrderControl>();
                     viewModel = _sp.GetRequiredService<OrderViewModel>();
                     break;
-                // … add your other cases here …
+                
 
                 default:
                     throw new InvalidOperationException($"Unknown view: {viewModelKey}");
             }
 
-            // Wire up the VM
             view.DataContext = viewModel;
 
-            // **This** tells WPF to show the new control
             CurrentView = view;
         }
 

@@ -22,6 +22,11 @@ namespace Restaurant.ViewModels
 
         public ObservableCollection<CategoryGroupViewModel> Categories { get; }
         public ObservableCollection<MenuListItemViewModel> Menus { get; }
+        public ObservableCollection<CategoryGroupViewModel> Groups { get; }
+        private readonly IList<CategoryGroupViewModel> _allGroups;
+
+        public string SearchQuery { get; set; }
+        public ICommand SearchCommand { get; }
 
         public string Name { get; set; } = "";
         public ObservableCollection<Category> CatCategories { get; }
@@ -36,7 +41,7 @@ namespace Restaurant.ViewModels
             }
         }
 
-        // Dishes-to-add picklist
+
         public ObservableCollection<Dish> AvailableDishes { get; }
         private Dish? _selectedAvailableDish;
         public Dish? SelectedAvailableDish
@@ -52,10 +57,9 @@ namespace Restaurant.ViewModels
             set { _newPortion = value; OnPropertyChanged(); }
         }
 
-        // Current menu items
         public ObservableCollection<MenuItemDto> Items { get; }
 
-        // Commands
+
         public ICommand AddItemCommand { get; }
         public ICommand RemoveItemCommand { get; }
         public DelegateCommand SaveCommand { get; }
@@ -66,10 +70,9 @@ namespace Restaurant.ViewModels
             && SelectedCategory != null
             && Items.Count >= 2;
 
-        public int? MenuId { get; }  // for edit
+        public int? MenuId { get; }  
         public MenuViewModel(RestaurantDbContext db, IConfiguration config, Menu? existing = null)
         {
-            // Load all categories
 
             _db = db;
             _config = config;
@@ -91,6 +94,13 @@ namespace Restaurant.ViewModels
                         .ThenInclude(d => d.Images)
             .AsNoTracking()
             .ToList();
+
+            _allGroups = rawCats
+            .Select(c => new CategoryGroupViewModel(c, config))
+            .ToList();
+            Groups = new ObservableCollection<CategoryGroupViewModel>(_allGroups);
+
+            SearchCommand = new RelayCommand(_ => ApplySearch());
 
             Categories = new ObservableCollection<CategoryGroupViewModel>(
             rawCats.Select(c => new CategoryGroupViewModel(c, config))
@@ -142,12 +152,20 @@ namespace Restaurant.ViewModels
             
         }
 
+        private void ApplySearch()
+        {
+            var results = SearchService.Filter(_allGroups, SearchQuery, minResults: 1);
+
+            Groups.Clear();
+            foreach (var g in results)
+                Groups.Add(g);
+        }
 
         private void AddItem()
         {
             if (SelectedAvailableDish == null) return;
 
-            // prevent duplicates: replace if exists
+
             var existing = Items.FirstOrDefault(i => i.DishId == SelectedAvailableDish.DishId);
             if (existing != null)
             {
@@ -172,7 +190,7 @@ namespace Restaurant.ViewModels
 
         private void Save(Window? dialog)
         {
-            // 1) Save the Menu entity
+
             Menu menu;
             if (_isNew)
             {
@@ -192,14 +210,14 @@ namespace Restaurant.ViewModels
                 _db.Menus.Update(menu);
                 _db.SaveChanges();
 
-                // Clear old MenuItems
+
                 _db.MenuItems.RemoveRange(
                     _db.MenuItems.Where(mi => mi.MenuId == menu.MenuId)
                 );
                 _db.SaveChanges();
             }
 
-            // 2) Insert new MenuItems
+
             foreach (var dto in Items)
             {
                 _db.MenuItems.Add(new MenuItem

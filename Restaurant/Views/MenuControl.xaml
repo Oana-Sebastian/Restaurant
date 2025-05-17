@@ -1,115 +1,138 @@
 ﻿<UserControl x:Class="Restaurant.Views.MenuControl"
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding Categories}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="0,10">
-                        <!-- 1) Category Header -->
-                        <TextBlock Text="{Binding CategoryName}"
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            
+            <RowDefinition Height="*"/>
+           
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+            
+        <DockPanel LastChildFill="True" Margin="10">
+            <TextBox x:Name="SearchBox"
+             DockPanel.Dock="Left"
+             Width="200"
+             Margin="0,0,10,0"
+             VerticalAlignment="Center"
+             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="Search"
+            Width="80"
+            Command="{Binding SearchCommand}" />
+        </DockPanel>
+        <ScrollViewer CanContentScroll="True">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,10">
+                            
+                            <TextBlock Text="{Binding CategoryName}"
                        FontSize="18"
                        FontWeight="Bold" />
 
-                        <!-- 2) Dishes Grid -->
-                        <ItemsControl ItemsSource="{Binding Dishes}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" Margin="0,5"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding PortionDisplay}"/>
-                                            <TextBlock Text="{Binding Price, StringFormat=C}"/>
-                                            <TextBlock Text="{Binding AllergensDisplay}"/>
-                                            <ItemsControl ItemsSource="{Binding ImageUrls}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel Orientation="Horizontal"/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Image Source="{Binding}" Width="50" Height="50" Margin="2"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <TextBlock Text="⚠ Indisponibil"
+                            
+                            <ItemsControl ItemsSource="{Binding Dishes}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" Margin="0,5"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding PortionDisplay}"/>
+                                                <TextBlock Text="{Binding Price, StringFormat=C}"/>
+                                                <TextBlock Text="{Binding AllergensDisplay}"/>
+                                                <ItemsControl ItemsSource="{Binding ImageUrls}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Image Source="{Binding}" Width="50" Height="50" Margin="2"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Text="⚠ Indisponibil"
                                  Foreground="Red"
                                  Visibility="{Binding IsAvailable,
                                                 Converter={StaticResource BoolToVisibilityConverter},
                                                 ConverterParameter=Invert}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
-                        <!-- 3) Menus Grid -->
-                        <ItemsControl ItemsSource="{Binding Menus}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="2" Margin="0,5"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
-                                        <StackPanel>
+                           
+                            <ItemsControl ItemsSource="{Binding Menus}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" Margin="0,5"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderThickness="1" Padding="8" Margin="4" CornerRadius="4">
+                                            <StackPanel>
 
-                                            <!-- Menu Name -->
-                                            <TextBlock Text="{Binding Name}"
+                                              
+                                                <TextBlock Text="{Binding Name}"
                      FontWeight="SemiBold"
                      Foreground="DarkBlue"/>
 
-                                            <!-- Component Dishes + Portions -->
-                                            <ItemsControl ItemsSource="{Binding Components}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal" Margin="0,2">
-                                                            <TextBlock Text="{Binding Dish}" />
-                                                            <TextBlock Text=" – " />
-                                                            <TextBlock Text="{Binding Grams}" />
-                                                            <TextBlock Text="g" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-
-                                            <!-- Allergens (comma-separated) -->
-                                            <TextBlock Text="Alergeni: "
-                     FontWeight="Bold"
-                     Margin="0,4,0,0"/>
-                                            <TextBlock Text="{Binding MenuAllergensDisplay}"
-                     TextWrapping="Wrap"/>
+                                               
+                                                <ItemsControl ItemsSource="{Binding Components}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                                <TextBlock Text="{Binding Dish}" />
+                                                                <TextBlock Text=" – " />
+                                                                <TextBlock Text="{Binding Grams}" />
+                                                                <TextBlock Text="g" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
 
 
-                                            <!-- Price -->
-                                            <TextBlock Text="{Binding Price, StringFormat=C}"
-                     Margin="0,4,0,0"/>
-
-                                            <!-- Availability Warning -->
-                                            <TextBlock Text="⚠ Indisponibil"
-                     Foreground="Red"
-                     Visibility="{Binding IsAvailable,
-                                   Converter={StaticResource BoolToVisibilityConverter},
-                                   ConverterParameter=Invert}"
-                     Margin="0,4,0,0"/>
-
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                                <TextBlock Text="Alergeni: "
+                                                    FontWeight="Bold"
+                                                    Margin="0,4,0,0"/>     
+                                                <TextBlock Text="{Binding MenuAllergensDisplay}"
+                                                TextWrapping="Wrap"/>
 
 
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+                                                
+                                                <TextBlock Text="{Binding Price, StringFormat=C}"
+                                                Margin="0,4,0,0"/>
+
+                                               
+                                                <TextBlock Text="⚠ Indisponibil"
+                                                        Foreground="Red"
+                                                    Visibility="{Binding IsAvailable,
+                                                        Converter={StaticResource BoolToVisibilityConverter},
+                                                        ConverterParameter=Invert}"
+                                                     Margin="0,4,0,0"/>
+
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        </StackPanel>
+    </Grid>
 </UserControl>

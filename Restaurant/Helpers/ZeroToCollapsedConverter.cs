@@ -12,7 +12,7 @@ namespace Restaurant.Helpers
             if (value is int count)
                 return count == 0 ? Visibility.Collapsed : Visibility.Visible;
 
-            return Visibility.Visible; // Default to visible if not an int
+            return Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

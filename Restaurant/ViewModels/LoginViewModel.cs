@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
-using Restaurant.Helpers;        // RelayCommand
+using Restaurant.Helpers;       
 using Restaurant.Models;
-using Restaurant.Service;        // IAuthService
+using Restaurant.Service;        
 using Restaurant.ViewModels;
-using Restaurant.Views;     // for nameof(RegisterViewModel)
+using Restaurant.Views;     
 
 namespace Restaurant.ViewModels
 {
@@ -82,6 +82,7 @@ namespace Restaurant.ViewModels
           
             if (_auth.CurrentUser.Role == Models.UserRole.Employee)
                 _nav.NavigateTo(nameof(EmployeeDashboardViewModel));
+            _nav.NavigateTo(nameof(MenuViewModel));
         }
 
         private void ShowMenu()

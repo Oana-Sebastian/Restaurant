@@ -21,7 +21,7 @@ namespace Restaurant.ViewModels
         private readonly IAuthService _auth;
         private readonly IConfiguration _config;
 
-        // thresholds & fees from config
+       
         private readonly decimal _freeDeliveryThreshold;
         private readonly decimal _deliveryFee;
         private readonly decimal _orderDiscountThreshold;
@@ -38,13 +38,7 @@ namespace Restaurant.ViewModels
         public ICommand CancelOrderCommand { get; }
         public ICommand ChangeStatusCommand { get; }
 
-        // in‐memory cart
-        //private readonly ObservableCollection<(MenuItem mi, int qty)> _cart
-        //    = new ObservableCollection<(MenuItem, int)>();
-
-        //    private readonly ObservableCollection<(OrderableItem item, int qty)> _cart
-        //= new ObservableCollection<(OrderableItem, int)>();
-
+       
         public ObservableCollection<CartItemViewModel> CartItems { get; }
     = new ObservableCollection<CartItemViewModel>();
 
@@ -78,15 +72,14 @@ namespace Restaurant.ViewModels
 
             var discountPct = _config.GetValue<int>("Settings:MenuDiscountPercent");
 
-            // Eager‐load categories → dishes + menus
+            
             var cats = db.Categories
-                // pull in dishes (no need to fetch their .Category again)
+              
                 .Include(c => c.Dishes)
-                    .ThenInclude(d => d.DishAllergens)   // if you need dish allergens
+                    .ThenInclude(d => d.DishAllergens)   
                         .ThenInclude(da => da.Allergen)
                 .Include(c => c.Dishes)
                     .ThenInclude(d => d.Images)
-                // pull in menus + their dishes (no need to re-include dish.Category)
                 .Include(c => c.Menus)
                     .ThenInclude(m => m.MenuItems)
                         .ThenInclude(mi => mi.Dish)
@@ -107,22 +100,12 @@ namespace Restaurant.ViewModels
                                          config.GetValue<int>("Settings:BulkOrderTimeWindowHours"));
             _orderDiscount = config.GetValue<decimal>("Settings:OrderDiscountPercent");
 
-            // load menu items for “place order” dropdown
-            //MenuItemsForOrdering = new ObservableCollection<MenuItem>(
-            //    db.MenuItems
-            //      .Include(mi => mi.Dish)
-            //      .ThenInclude(d => d.Category)
-            //      .ToList()
-            //);
-
-            // Flatten into one list
+           
             var orderables = new List<OrderableItem>();
             foreach (var c in cats)
             {
-                // dishes
                 foreach (var d in c.Dishes)
                     orderables.Add(new OrderableItem(d));
-                // menus
                 foreach (var m in c.Menus)
                     orderables.Add(new OrderableItem(m, discountPct));
             }
@@ -146,9 +129,7 @@ namespace Restaurant.ViewModels
             if (SelectedOrderItem == null) return;
             if (!int.TryParse(NewOrderQuantity, out var q) || q <= 0) return;
 
-            // 1) Check stock for this single addition
-            //    (reuse the same logic from PlaceOrder’s requirement map,
-            //     but only for this OrderableItem and this q)
+            
             var shortfalls = new List<string>();
             if (!SelectedOrderItem.IsMenu)
             {
@@ -182,7 +163,6 @@ namespace Restaurant.ViewModels
                 return;
             }
 
-            // 2) Add or update an existing CartItemViewModel
             var existing = CartItems.FirstOrDefault(ci => ci.DisplayText == SelectedOrderItem.DisplayText);
             if (existing != null)
             {
@@ -193,7 +173,6 @@ namespace Restaurant.ViewModels
                 CartItems.Add(new CartItemViewModel(SelectedOrderItem, q));
             }
 
-            // 3) Reset the entry and update bindings
             NewOrderQuantity = "1";
             OnPropertyChanged(nameof(NewOrderQuantity));
             OnPropertyChanged(nameof(CanPlaceOrder));
@@ -204,7 +183,6 @@ namespace Restaurant.ViewModels
         {
             if (item == null) return;
             CartItems.Remove(item);
-            // fire any property-changed so buttons enable/disable update:
             OnPropertyChanged(nameof(CanPlaceOrder));
         }
 
@@ -212,7 +190,6 @@ namespace Restaurant.ViewModels
         {
             var user = _auth.CurrentUser!;
 
-            // 1) Build a flat list of (DishId → required portions)
             var requirements = new Dictionary<int, int>();
             foreach (var ci in CartItems)
             {
@@ -222,7 +199,6 @@ namespace Restaurant.ViewModels
                 if (!oi.IsMenu)
                 {
                     var dish = (Dish)oi.Entity;
-                    // each standalone “portion” is dish.PortionQuantity grams
                     var neededGrams = qty * dish.PortionQuantity;
                     requirements[dish.DishId] =
                         requirements.GetValueOrDefault(dish.DishId) + neededGrams;
@@ -232,7 +208,6 @@ namespace Restaurant.ViewModels
                     var menu = (Menu)oi.Entity;
                     foreach (var mi in menu.MenuItems)
                     {
-                        // here MenuPortionGrams is *already* the grams you need
                         var neededGrams = qty * mi.MenuPortionGrams;
                         requirements[mi.DishId] =
                             requirements.GetValueOrDefault(mi.DishId) + neededGrams;
@@ -240,7 +215,6 @@ namespace Restaurant.ViewModels
                 }
             }
 
-            // 2) Check stock
             var shortfalls = new List<string>();
             foreach (var (dishId, reqGrams) in requirements)
             {
@@ -287,7 +261,6 @@ namespace Restaurant.ViewModels
                 OrderItems = new List<OrderItem>()
             };
 
-            // 4) Populate OrderItems *and* deduct stock in one go
             foreach (var ci in CartItems)
             {
                 var oi = ci.Orderable;
@@ -295,7 +268,6 @@ namespace Restaurant.ViewModels
 
                 if (!oi.IsMenu)
                 {
-                    // ----- standalone dish -----
                     var dishEntity = _db.Dishes.Find(((Dish)oi.Entity).DishId)!;
                     var gramsToRemove = qty * dishEntity.PortionQuantity;
                     dishEntity.TotalQuantity -= gramsToRemove;
@@ -309,14 +281,12 @@ namespace Restaurant.ViewModels
                         PriceAtOrder = dishEntity.Price
                     });
 
-                    // deduct stock
                     dishEntity.TotalQuantity -=
                         qty * dishEntity.PortionQuantity;
                 }
                 else
                 {
-                    // ----- menu -----
-                    // load & track the menu + its dishes
+                    
                     var menuEntity = _db.Menus
                                        .Include(m => m.MenuItems)
                                          .ThenInclude(mi => mi.Dish)
@@ -324,15 +294,14 @@ namespace Restaurant.ViewModels
 
                     ord.OrderItems.Add(new OrderItem
                     {
-                        Menu = menuEntity,                // navigation
-                        MenuId = menuEntity.MenuId,         // foreign-key
-                        Dish = null,                      // clear any dish
-                        DishId = null,                      // clear any dish FK
+                        Menu = menuEntity,                
+                        MenuId = menuEntity.MenuId,        
+                        Dish = null,                      
+                        DishId = null,                      
                         Quantity = qty,
                         PriceAtOrder = oi.Price
                     });
 
-                    // deduct stock for each dish in the menu
                     foreach (var mi in menuEntity.MenuItems)
     {
         var gramsToRemove = qty * mi.MenuPortionGrams;
@@ -341,7 +310,6 @@ namespace Restaurant.ViewModels
                 }
             }
 
-            // 5) Compute costs & fees
             ord.FoodCost = ord.OrderItems.Sum(x => x.PriceAtOrder * x.Quantity);
             ord.DeliveryFee = ord.FoodCost >= _freeDeliveryThreshold ? 0 : _deliveryFee;
             ord.DiscountAmount = 0;
@@ -357,11 +325,9 @@ namespace Restaurant.ViewModels
             ord.TotalCost = ord.FoodCost + ord.DeliveryFee - ord.DiscountAmount;
             ord.EstimatedDeliveryTime = TimeSpan.FromMinutes(30);
 
-            // 6) Persist everything
             _db.Orders.Add(ord);
             _db.SaveChanges();
 
-            // 7) Clear cart & refresh
             CartItems.Clear();
             RefreshDisplayedOrders();
         }
@@ -381,7 +347,7 @@ namespace Restaurant.ViewModels
                 .ThenInclude(oi => oi.Menu)
                 .OrderByDescending(o => o.OrderDate);
 
-            // client sees only own orders
+          
             if (_auth.CurrentUser?.Role == UserRole.Client)
                 q = q.Where(o => o.UserId == _auth.CurrentUser.UserId);
 
@@ -417,15 +383,15 @@ namespace Restaurant.ViewModels
        public class OrderableItem
 {
     public int      Id            { get; }
-    public bool     IsMenu        { get; }   // true=menu, false=dish
+    public bool     IsMenu        { get; }  
     public string   CategoryName  { get; }
-    public string   DisplayText   { get; }   // shown in the ComboBox
-    public object   Entity        { get; }   // underlying Dish or Menu
+    public string   DisplayText   { get; }   
+    public object   Entity        { get; }   
 
-    // ← New: unified price-per-portion (or per-menu)
+   
     public decimal  Price         { get; }
 
-    // Constructor for a single Dish
+    
     public OrderableItem(Dish d)
     {
         Id           = d.DishId;
@@ -436,14 +402,13 @@ namespace Restaurant.ViewModels
         Entity       = d;
     }
 
-    // Constructor for a Menu (discounted total)
+  
     public OrderableItem(Menu m, decimal discountPct)
     {
         Id           = m.MenuId;
         IsMenu       = true;
         CategoryName = m.Category!.Name;
 
-        // compute raw total, then discount
         var raw = m.MenuItems.Sum(mi =>
             mi.Dish.Price
             * mi.MenuPortionGrams
