@@ -13,9 +13,6 @@
             <Button Content="Register"
               Command="{Binding NavigateRegisterCommand}"
               Margin="2" Padding="8,4"/>
-            <Button Content="Search"
-              Command="{Binding NavigateSearchCommand}"
-              Margin="2" Padding="8,4"/>
             <Button Content="Menu"
               Command="{Binding NavigateMenuCommand}"
               Margin="2" Padding="8,4"/>

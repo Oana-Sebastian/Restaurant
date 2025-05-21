@@ -47,19 +47,19 @@
                                                 <TextBlock Text="{Binding PortionDisplay}"/>
                                                 <TextBlock Text="{Binding Price, StringFormat=C}"/>
                                                 <TextBlock Text="{Binding AllergensDisplay}"/>
-                                                <ItemsControl ItemsSource="{Binding ImageUrls}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal"/>
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Image Source="{Binding}" Width="50" Height="50" Margin="2"/>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <TextBlock Text="⚠ Indisponibil"
+                                                    <ItemsControl ItemsSource="{Binding ImageSources}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Image Source="{Binding}" Width="50" Height="50" Margin="2"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <TextBlock Text="⚠ Indisponibil"
                                  Foreground="Red"
                                  Visibility="{Binding IsAvailable,
                                                 Converter={StaticResource BoolToVisibilityConverter},

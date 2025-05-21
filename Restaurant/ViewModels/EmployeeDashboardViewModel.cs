@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +42,7 @@ namespace Restaurant.ViewModels
             }
         }
 
+        public ObservableCollection<BitmapImage> ImageSources { get; }
         public ObservableCollection<Category> Categories { get; }
         public ObservableCollection<Dish> Dishes { get; }
         public ObservableCollection<MenuListItemViewModel> Menus { get; }
@@ -106,7 +109,31 @@ namespace Restaurant.ViewModels
                    .ToList()
             );
 
-           
+            ImageSources = new ObservableCollection<BitmapImage>();
+
+            foreach (var d in Dishes)
+            {
+                if (d.Images != null)
+                {
+                    foreach (var img in d.Images)
+                    {
+                        var outputDir = AppDomain.CurrentDomain.BaseDirectory;
+                        var fullPath = Path.Combine(outputDir, "Images", img.Url);
+
+                        if (!File.Exists(fullPath))
+                            continue;
+
+                        var bmp = new BitmapImage();
+                        bmp.BeginInit();
+                        bmp.UriSource = new Uri(fullPath, UriKind.Absolute);
+                        bmp.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp.EndInit();
+
+                        ImageSources.Add(bmp);
+                    }
+                }
+            }
+
             Menus = new ObservableCollection<MenuListItemViewModel>(
                 _db.Menus
                     .Include(m => m.Category)

@@ -4,11 +4,13 @@
              xmlns:helpers="clr-namespace:Restaurant.Helpers">
 
         <Application.Resources>
-          
-            <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <helpers:AllergenListConverter x:Key="AllergenListConverter" />
+
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:AllergenListConverter x:Key="AllergenListConverter" />
+        <helpers:ImageListConverter x:Key="ImageListConverter" />
             <helpers:CollectionContainsConverter x:Key="CollectionContainsConverter"/>
             <helpers:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter"/>
+
     </Application.Resources>
 
 </Application>

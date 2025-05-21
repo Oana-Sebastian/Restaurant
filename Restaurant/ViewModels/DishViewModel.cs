@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Restaurant.Data;
 using Restaurant.Helpers;
 using Restaurant.Models;
+using System.Windows.Media.Imaging;
+using System.IO;
 
 namespace Restaurant.ViewModels
 {
@@ -45,7 +47,6 @@ namespace Restaurant.ViewModels
             set { _dish.TotalQuantity = value; OnPropertyChanged(); }
         }
 
-       
         public ObservableCollection<Category> Categories { get; }
         private Category? _selectedCategory;
         public Category? SelectedCategory
@@ -66,8 +67,9 @@ namespace Restaurant.ViewModels
 
         
         public ObservableCollection<string> ImageUrls { get; }
+        public ObservableCollection<BitmapImage> ImageSources { get; }
 
-       
+
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand DeleteImageUrlCommand { get; }
@@ -92,7 +94,6 @@ namespace Restaurant.ViewModels
             Categories = new ObservableCollection<Category>(_db.Categories.ToList());
             AvailableAllergens = new ObservableCollection<Allergen>(_db.Allergens.ToList());
 
-           
 
 
             var allergenSeq = _dish.DishAllergens?.Select(da => da.Allergen)
@@ -107,11 +108,57 @@ namespace Restaurant.ViewModels
             var urlSeq = _dish.Images?.Select(i => i.Url)
              ?? Enumerable.Empty<string>();
 
-            ImageUrls = new ObservableCollection<string>(
-                urlSeq.ToList()
-            );
+            ImageSources = new ObservableCollection<BitmapImage>();
 
-            
+            if (_dish.Images != null)
+            {
+                foreach (var img in _dish.Images)
+                {
+                    var outputDir = AppDomain.CurrentDomain.BaseDirectory;
+                    var fullPath = Path.Combine(outputDir, "Images", img.Url);
+
+                    if (!File.Exists(fullPath))
+                        continue;
+
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource = new Uri(fullPath, UriKind.Absolute);
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.EndInit();
+
+                    ImageSources.Add(bmp);
+                }
+            }
+
+            //ImageUrls = new ObservableCollection<string>(
+            //    urlSeq.ToList()
+            //);
+
+            //    ImageUrls = new ObservableCollection<string>(
+            //    _dish.Images?
+            //     .Select(img => System.IO.Path.Combine("Images", img.Url))
+            //     .Where(path => System.IO.File.Exists(System.IO.Path.Combine(
+            //         AppDomain.CurrentDomain.BaseDirectory, path)))
+            //     .ToList()
+            //    ?? new List<string>()
+            //);
+            //    var path = $"Images/{img.Url}";
+            //    var uri = new Uri($"pack://siteoforigin:,,,/{path}", UriKind.Absolute);
+
+            ImageUrls = new ObservableCollection<string>(
+    _dish.Images?
+        .Select(di =>
+            // for each DishImage di, build a pack‐URI string
+            new Uri(
+                $"pack://siteoforigin:,,,/Images/{di.Url}",
+                UriKind.Absolute
+            ).ToString()
+        )
+        .ToList()
+    ?? new List<string>()
+);
+
+
             if (!_isNew)
                 SelectedCategory = Categories.FirstOrDefault(c => c.CategoryId == _dish.CategoryId);
 
